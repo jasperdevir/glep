@@ -78,7 +78,7 @@ If there was no errors, the required folders for a GLEP project include:
 - ```lib``` (Static Libraries)
 - ```res``` (Resource Files)
 
-I'd recommend the following structure for your GLEP projects:
+I'd recommend the following structure for a GLEP projects:
 ```
 Project/
 ├─ bin/
@@ -91,7 +91,7 @@ Project/
 ├─ CMakeLists.txt
 ```
 ## Usage
-In-depth examples are avaliable in the ```examples``` directory, with their programs built by default to ```bin```. This can be disabled by setting ```GLEP_BUILD_EXAMPLES``` to ``` false``` during the build process. 
+In-depth examples are avaliable in the ```examples``` directory, with their programs built by default to ```bin```. This can be disabled by setting ```GLEP_BUILD_EXAMPLES``` to ```false``` during the build process. 
 ### Basic Example
 
 ```cpp
