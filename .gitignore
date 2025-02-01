@@ -1,0 +1,7 @@
+/bin/*
+/build/*
+/lib/*
+
+!/lib/.empty
+!/build/.empty
+!/bin/.empty
