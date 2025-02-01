@@ -9,7 +9,7 @@ If you encounter any bugs, issues, or have any suggestions please let me know.
 
 ### External Libraries: 
 - [glad](https://github.com/Dav1dde/glad) (OpenGL Binding)
-- [glfw](https://github.com/glfw/glfw) (Window and Input Managment)
+- [glfw](https://github.com/glfw/glfw) (Window and Input Management)
 - [glm](https://github.com/g-truc/glm) (Mathematics)
 - [ImGui](https://github.com/ocornut/imgui) (GUI)
 - [assimp](https://github.com/assimp/assimp) (Model Loading)
@@ -119,7 +119,7 @@ int main(){
 
     std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>(window, camera);
 
-    /* Scene Managment */
+    /* Scene Management */
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 
     std::shared_ptr<Geometry> geometry = std::make_shared<CubeGeometry>(1.0f, 1.0f, 1.0f);
