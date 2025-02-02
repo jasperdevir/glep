@@ -56,6 +56,9 @@ namespace GLEP {
         //TexCoords
         glEnableVertexAttribArray(2);	
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoord));
+        //Tangent
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
 
         _hasInit = true;
 
@@ -81,16 +84,6 @@ namespace GLEP {
 
         glBindBuffer(GL_ARRAY_BUFFER, _VBO);
         glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vertex), &_vertices[0], GL_STATIC_DRAW);
-
-        //WorldPosition
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-        //Normal
-        glEnableVertexAttribArray(1);	
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-        //TexCoords
-        glEnableVertexAttribArray(2);	
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoord));
     }
 
     void Geometry::bindIndices(){
@@ -107,23 +100,43 @@ namespace GLEP {
     }
 
     void Geometry::CalculateNormals(){
+        //NORMALS
         for (int i = 0; i < _indices.size(); i += 3) {
             unsigned int index0 = _indices[i];
             unsigned int index1 = _indices[i + 1];
             unsigned int index2 = _indices[i + 2];
 
-            glm::vec3 v0 = _vertices[index0].Position;
-            glm::vec3 v1 = _vertices[index1].Position;
-            glm::vec3 v2 = _vertices[index2].Position;
+            glm::vec3 pos0 = _vertices[index0].Position;
+            glm::vec3 pos1 = _vertices[index1].Position;
+            glm::vec3 pos2 = _vertices[index2].Position;
 
-            glm::vec3 edge1 = v1 - v0;
-            glm::vec3 edge2 = v2 - v0;
+            glm::vec3 edge1 = pos1 - pos0;
+            glm::vec3 edge2 = pos2 - pos0;
 
             glm::vec3 faceNormal = glm::normalize(glm::cross(edge1, edge2));
 
-            _vertices[index0].Normal += faceNormal;
-            _vertices[index1].Normal += faceNormal;
-            _vertices[index2].Normal += faceNormal;
+            _vertices[index0].Normal = faceNormal;
+            _vertices[index1].Normal = faceNormal;
+            _vertices[index2].Normal = faceNormal;
+
+            glm::vec2 uv0 = _vertices[index0].TexCoord;
+            glm::vec2 uv1 = _vertices[index1].TexCoord;
+            glm::vec2 uv2 = _vertices[index2].TexCoord;
+
+            glm::vec2 deltaUV1 = uv1 - uv0;
+            glm::vec2 deltaUV2 = uv2 - uv0; 
+
+            float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+            glm::vec3 tangent = glm::vec3(
+                f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
+                f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
+                f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
+            );
+
+            _vertices[index0].Tangent = tangent;
+            _vertices[index1].Tangent = tangent;
+            _vertices[index2].Tangent = tangent;
         }
 
         for (Vertex v : _vertices) {
@@ -256,8 +269,19 @@ namespace GLEP {
             } else {
                 texCoords = glm::vec2(0.0f);
             }
+
+            //Tangent
+            glm::vec3 tangent;
+            if(mesh->HasTangentsAndBitangents()){
+                tangent.x = mesh->mTangents[i].x;
+                tangent.y = mesh->mTangents[i].y;
+                tangent.z = mesh->mTangents[i].z;
+            } else {
+                if(!_normalCalculationNeeded) _normalCalculationNeeded = true;
+                tangent = glm::vec3(0.0f);
+            }
             
-            vertices.push_back(Vertex(position, normal, texCoords));
+            vertices.push_back(Vertex(position, normal, texCoords, tangent));
         }
 
         //Indices
@@ -506,7 +530,7 @@ namespace GLEP {
                 float posZ = depth;
                 
                 glm::vec2 texCoords = glm::vec2(posX/ width + 0.5f, posY / height + 0.5f);
-                vertices.push_back(Vertex(glm::vec3(posX, posY, posZ), glm::vec3(0.0f), texCoords));
+                vertices.push_back(Vertex(glm::vec3(posX, posY, posZ), glm::vec3(0.0f), texCoords, glm::vec3(0.0f)));
             }
         }
 
@@ -563,7 +587,7 @@ namespace GLEP {
                 x *= _width;
                 y *= _height;
                 
-                _vertices.push_back(Vertex(glm::vec3(x, y, z), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f)));
+                _vertices.push_back(Vertex(glm::vec3(x, y, z), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
             }
         }
 

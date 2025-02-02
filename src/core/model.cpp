@@ -230,8 +230,10 @@ namespace GLEP{
                 meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.specularTex", specularTex);
             }
 
-            if(normalTex != nullptr && meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex) == nullptr){
-                meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
+            if(normalTex != nullptr){
+                if(meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex) == nullptr)
+                    meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
+                meshMat->SetUniform("uMaterial.hasNormalMap", true);
             }
 
             if(heightTex != nullptr && meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.heightTex", heightTex) == nullptr){
@@ -327,7 +329,18 @@ namespace GLEP{
                 texCoords = glm::vec2(0.0f);
             }
             
-            vertices.push_back(Vertex(position, normal, texCoords));
+            //Tangent
+            glm::vec3 tangent;
+            if(mesh->HasTangentsAndBitangents()){
+                tangent.x = mesh->mTangents[i].x;
+                tangent.y = mesh->mTangents[i].y;
+                tangent.z = mesh->mTangents[i].z;
+            } else {
+                if(!_calculateNormalsNeeded) _calculateNormalsNeeded = true;
+                tangent = glm::vec3(0.0f);
+            }
+            
+            vertices.push_back(Vertex(position, normal, texCoords, tangent));
         }
 
         //Indices

@@ -2,9 +2,17 @@
 
 struct Vertex {
     vec3 position;
+    vec3 tangentPosition;
     vec4 lightSpacePosition;
-    vec3 normal;
     vec2 uv;
+    mat3 tbn;
+};
+
+struct GLEPInfo {
+    float time;
+    float deltaTime;
+    vec3 viewPos;
+    vec3 tangentViewPos;
 };
 
 struct AmbientLight{
@@ -45,10 +53,13 @@ struct SpotLight {
 
 struct Material {
     int type;
+    bool hasNormalMap;
 
     vec4 diffuseColor;
 
     sampler2D diffuseTex;
+
+    sampler2D normalTex;
 };
 
 struct Framebuffer {
@@ -80,10 +91,16 @@ vec3 diffuseLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, vec3
     return vec3(lightColor * diff * intensity * diffuseMat);
 }
 
-vec3 calcPointLight(PointLight light, vec3 diffuseMat){
-    vec3 norm = normalize(v.normal);
-    vec3 dir = normalize(light.position - v.position); 
-    vec3 diffuse = diffuseLighting(dir, norm, light.color.rgb, light.intensity, diffuseMat);
+vec3 calcPointLight(PointLight light, vec3 normal, vec3 diffuseMat){
+    vec3 lightDir = vec3(0.0f);
+    if(uMaterial.hasNormalMap){
+        vec3 lightPos = v.tbn * light.position;
+        lightDir = normalize(lightPos - v.tangentPosition);
+    }else {
+        lightDir = normalize(light.position - v.position);
+    }
+
+    vec3 diffuse = diffuseLighting(lightDir, normal, light.color.rgb, light.intensity, diffuseMat);
 
     float dist = length(light.position - v.position);
     float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
@@ -93,22 +110,33 @@ vec3 calcPointLight(PointLight light, vec3 diffuseMat){
     return diffuse;
 }
 
-vec3 calcDirectionalLight(DirectionalLight light, vec3 diffuseMat){
-    vec3 norm = normalize(v.normal);
-    vec3 dir = normalize(-light.direction);
-    vec3 diffuse = diffuseLighting(dir, norm, light.color.rgb, light.intensity, diffuseMat);
+vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 diffuseMat){
+    vec3 lightDir = vec3(0.0f);
+    if(uMaterial.hasNormalMap){
+        lightDir = normalize(v.tbn * -light.direction);
+    }else {
+        lightDir = normalize(-light.direction);
+    }
+
+    vec3 diffuse = diffuseLighting(lightDir, normal, light.color.rgb, light.intensity, diffuseMat);
 
     return diffuse;
 }
 
-vec3 calcSpotLight(SpotLight light, vec3 diffuseMat){
-    vec3 dir = normalize(light.position - v.position); 
-    float theta = dot(dir, normalize(-light.direction));
+vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 diffuseMat){
+    vec3 lightDir = vec3(0.0f);
+    if(uMaterial.hasNormalMap){
+        vec3 lightPos = v.tbn * light.position;
+        lightDir = normalize(lightPos - v.tangentPosition);
+    }else {
+        lightDir = normalize(light.position - v.position);
+    }
+
+    float theta = dot(lightDir, normalize(-light.direction));
     float epsilon = light.innerCutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0); 
 
-    vec3 norm = normalize(v.normal);
-    vec3 diffuse = diffuseLighting(dir, norm, light.color.rgb, light.intensity, diffuseMat);
+    vec3 diffuse = diffuseLighting(lightDir, normal, light.color.rgb, light.intensity, diffuseMat);
 
     float dist = length(light.position - v.position);
     float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
@@ -120,14 +148,20 @@ vec3 calcSpotLight(SpotLight light, vec3 diffuseMat){
         
 }
 
-float calcDirectionalShadow(vec4 positionLightSpace){
+float calcDirectionalShadow(vec4 positionLightSpace, vec3 normal){
     vec3 projCoords = positionLightSpace.xyz / positionLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
     float closestDepth = texture(uShadowMap.depth, projCoords.xy).r; 
     float currentDepth = projCoords.z;
 
-    vec3 normal = normalize(v.normal);
-    vec3 lightDir = normalize(uDirectionalLight.position - v.position);
+    vec3 lightDir = vec3(0.0f);
+    if(uMaterial.hasNormalMap){
+        vec3 lightPos = v.tbn * uDirectionalLight.position;
+        lightDir = normalize(lightPos - v.tangentPosition);
+    } else {
+        lightDir = normalize(uDirectionalLight.position - v.position);
+    }
+
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);  
 
     //PCF
@@ -154,6 +188,12 @@ void main(){
 
     vec4 diffuseMat = vec4(1.0f);
 
+    vec3 normal = v.tbn[2];
+    if(uMaterial.hasNormalMap){
+        normal = texture(uMaterial.normalTex, v.uv).rgb;
+        normal = normalize(normal * 2.0 - 1.0);
+    }
+
     if(uMaterial.type == 1){
         diffuseMat = uMaterial.diffuseColor;
     } else if(uMaterial.type == 2){
@@ -163,16 +203,16 @@ void main(){
     vec3 ambient = uAmbient.color.rgb * uAmbient.intensity * diffuseMat.rgb;
 
     for(int i = 0; i < uPointLightsAmt; i++){
-        result += calcPointLight(uPointLights[i], diffuseMat.rgb);
+        result += calcPointLight(uPointLights[i], normal, diffuseMat.rgb);
     }
 
     for(int i = 0; i < uSpotLightsAmt; i++){
-        result += calcSpotLight(uSpotLights[i], diffuseMat.rgb);
+        result += calcSpotLight(uSpotLights[i], normal, diffuseMat.rgb);
     }
 
-    result += calcDirectionalLight(uDirectionalLight, diffuseMat.rgb);
+    result += calcDirectionalLight(uDirectionalLight, normal, diffuseMat.rgb);
 
-    float shadow = calcDirectionalShadow(v.lightSpacePosition); 
+    float shadow = calcDirectionalShadow(v.lightSpacePosition, normal); 
     vec3 lighting = (ambient + (1.0 - shadow) * result); 
 
     vec4 finalColor = vec4(lighting, diffuseMat.a);
