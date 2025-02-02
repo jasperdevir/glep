@@ -215,6 +215,8 @@ namespace GLEP {
             result = LambertMaterial::FromJson(data["uniforms"]);
         } else if(type == "phong_material"){
             result = PhongMaterial::FromJson(data["uniforms"]);
+        } else if(type == "blinn_phong_material"){
+            result = BlinnPhongMaterial::FromJson(data["uniforms"]);
         } else {
             Print(PrintCode::ERROR, "IMPORT", "Unrecognised Material type attempted to be imported - Type: " + type);
             return nullptr;
@@ -432,7 +434,20 @@ namespace GLEP {
         }
     }
 
-    PhongMaterial::PhongMaterial(std::shared_ptr<Texture> diffuse, float shininess):
+    PhongMaterial::PhongMaterial(Color diffuse, Color specular, float shininess):
+    Material(
+        File::GLEP_SHADERS_PATH / "default.vs", 
+        File::GLEP_SHADERS_PATH / "lit" / "phong.fs"
+    ){
+        _name = "phong_material";
+        AddUniform<int>("uMaterial.type", 1, true);
+        AddUniform<Color>("uMaterial.diffuseColor", diffuse);
+        AddUniform<Color>("uMaterial.specularColor", diffuse);
+        AddUniform<float>("uMaterial.shininess", shininess);
+        LightingRequired = true;
+    }
+
+    PhongMaterial::PhongMaterial(std::shared_ptr<Texture> diffuse, Color specular, float shininess):
     Material(
         File::GLEP_SHADERS_PATH / "default.vs", 
         File::GLEP_SHADERS_PATH / "lit" / "phong.fs"
@@ -440,6 +455,7 @@ namespace GLEP {
         _name = "phong_material";
         AddUniform<int>("uMaterial.type", 2, true);
         AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
+        AddUniform<Color>("uMaterial.specularTex", specular);
         AddUniform<float>("uMaterial.shininess", shininess);
         LightingRequired = true;
     }
@@ -450,21 +466,9 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "lit" / "phong.fs"
     ){
         _name = "phong_material";
-        AddUniform<int>("uMaterial.type", 2, true);
+        AddUniform<int>("uMaterial.type", 3, true);
         AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
         AddUniform<std::shared_ptr<Texture>>("uMaterial.specularTex", specular);
-        AddUniform<float>("uMaterial.shininess", shininess);
-        LightingRequired = true;
-    }
-
-    PhongMaterial::PhongMaterial(Color diffuse, float shininess):
-    Material(
-        File::GLEP_SHADERS_PATH / "default.vs", 
-        File::GLEP_SHADERS_PATH / "lit" / "phong.fs"
-    ){
-        _name = "phong_material";
-        AddUniform<int>("uMaterial.type", 1, true);
-        AddUniform<Color>("uMaterial.diffuseColor", diffuse);
         AddUniform<float>("uMaterial.shininess", shininess);
         LightingRequired = true;
     }
@@ -473,21 +477,87 @@ namespace GLEP {
         if(data["uMaterial.type"] == 1){
             return std::make_shared<PhongMaterial>(
                 Color::FromJson(data["uMaterial.diffuseColor"]),
+                Color::FromJson(data["uMaterial.specularColor"]),
                 data["uMaterial.shininess"]
             );
         } else if (data["uMaterial.type"] == 2){
-            std::shared_ptr<Texture> diffuse = Texture::FromJson(data["uMaterial.diffuseTex"]);
-            std::shared_ptr<Texture> specular;
-            if(data.contains("uMaterial.specularTex"))
-                specular = Texture::FromJson(data["uMaterial.specularTex"]);
-
             return std::make_shared<PhongMaterial>(
-                diffuse,
-                specular,
+                Texture::FromJson(data["uMaterial.diffuseTex"]),
+                Color::FromJson(data["uMaterial.specularColor"]),
+                data["uMaterial.shininess"]
+            );
+        } else if (data["uMaterial.type"] == 3){
+            return std::make_shared<PhongMaterial>(
+                Texture::FromJson(data["uMaterial.diffuseTex"]),
+                Texture::FromJson(data["uMaterial.specularTex"]),
                 data["uMaterial.shininess"]
             );
         } else {
             Print(PrintCode::ERROR, "MATERIAL", "Unknown phong_material type: " + data["type"]);
+            return nullptr;
+        }
+    }
+
+    BlinnPhongMaterial::BlinnPhongMaterial(Color diffuse, Color specular, float shininess):
+    Material(
+        File::GLEP_SHADERS_PATH / "default.vs", 
+        File::GLEP_SHADERS_PATH / "lit" / "blinnPhong.fs"
+    ){
+        _name = "blinn_phong_material";
+        AddUniform<int>("uMaterial.type", 1, true);
+        AddUniform<Color>("uMaterial.diffuseColor", diffuse);
+        AddUniform<Color>("uMaterial.specularColor", specular);
+        AddUniform<float>("uMaterial.shininess", shininess);
+        LightingRequired = true;
+    }
+
+    BlinnPhongMaterial::BlinnPhongMaterial(std::shared_ptr<Texture> diffuse, Color specular, float shininess):
+    Material(
+        File::GLEP_SHADERS_PATH / "default.vs", 
+        File::GLEP_SHADERS_PATH / "lit" / "blinnPhong.fs"
+    ){
+        _name = "blinn_phong_material";
+        AddUniform<int>("uMaterial.type", 2, true);
+        AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
+        AddUniform<Color>("uMaterial.specularColor", specular);
+        AddUniform<float>("uMaterial.shininess", shininess);
+        LightingRequired = true;
+    }
+
+    BlinnPhongMaterial::BlinnPhongMaterial(std::shared_ptr<Texture> diffuse, std::shared_ptr<Texture> specular, float shininess):
+    Material(
+        File::GLEP_SHADERS_PATH / "default.vs", 
+        File::GLEP_SHADERS_PATH / "lit" / "blinnPhong.fs"
+    ){
+        _name = "blinn_phong_material";
+        AddUniform<int>("uMaterial.type", 3, true);
+        AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
+        AddUniform<std::shared_ptr<Texture>>("uMaterial.specularTex", specular);
+        AddUniform<float>("uMaterial.shininess", shininess);
+        LightingRequired = true;
+    }
+
+    std::shared_ptr<BlinnPhongMaterial> BlinnPhongMaterial::FromJson(const json& data){
+        if(data["uMaterial.type"] == 1){
+            return std::make_shared<BlinnPhongMaterial>(
+                Color::FromJson(data["uMaterial.diffuseColor"]),
+                Color::FromJson(data["uMaterial.specularColor"]),
+                data["uMaterial.shininess"]
+            );
+        } else if (data["uMaterial.type"] == 2){
+            return std::make_shared<BlinnPhongMaterial>(
+                Texture::FromJson(data["uMaterial.diffuseTex"]),
+                Color::FromJson(data["uMaterial.specularColor"]),
+                data["uMaterial.shininess"]
+            );
+        } else if (data["uMaterial.type"] == 3){
+            return std::make_shared<BlinnPhongMaterial>(
+                Texture::FromJson(data["uMaterial.diffuseTex"]),
+                Texture::FromJson(data["uMaterial.specularTex"]),
+                data["uMaterial.shininess"]
+            );
+        } else {
+            Print(PrintCode::ERROR, "MATERIAL", "Unknown blinn_phong_material type: " + data["type"]);
             return nullptr;
         }
     }

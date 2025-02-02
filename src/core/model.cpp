@@ -157,23 +157,23 @@ namespace GLEP{
         return _textureMaps;
     }
 
-    ImportGeometryModel::ImportGeometryModel(std::filesystem::path modelPath, std::shared_ptr<Material> baseMaterial){
+    ImportGeometryModel::ImportGeometryModel(std::filesystem::path modelPath, std::shared_ptr<Material> baseMaterial, bool copyUniforms){
         _importGeometry = std::make_shared<ImportGeometry>(modelPath);
         _baseMaterial = baseMaterial;
 
-        initialize();
+        initialize(copyUniforms);
     }
 
-    ImportGeometryModel::ImportGeometryModel(std::shared_ptr<ImportGeometry> geometry, std::shared_ptr<Material> baseMaterial){
+    ImportGeometryModel::ImportGeometryModel(std::shared_ptr<ImportGeometry> geometry, std::shared_ptr<Material> baseMaterial, bool copyUniforms){
         _importGeometry = geometry;
         _baseMaterial = baseMaterial;
 
-        initialize();
+        initialize(copyUniforms);
     }
 
-    void ImportGeometryModel::initialize(){
+    void ImportGeometryModel::initialize(bool copyUniforms){
         for(auto& g : _importGeometry->GetGeometry()){
-            _meshes.push_back(std::make_shared<Mesh>(g, std::make_shared<Material>(_baseMaterial, false)));
+            _meshes.push_back(std::make_shared<Mesh>(g, std::make_shared<Material>(_baseMaterial, copyUniforms)));
         }
     }
 
@@ -200,8 +200,26 @@ namespace GLEP{
 
             std::shared_ptr<Material> meshMat = _meshes[i]->MaterialData;
 
-            if(diffuseTex != nullptr || specularTex != nullptr || normalTex != nullptr || heightTex != nullptr){
-                meshMat->SetUniformValue("uMaterial.type", 2);
+            if(diffuseTex != nullptr){
+                if(specularTex != nullptr){
+                    meshMat->AddUniform<float>("uMaterial.type", 3);
+                } else {
+                    meshMat->AddUniform<float>("uMaterial.type", 2);
+                    if(meshMat->SetUniformValue<Color>("uMaterial.specularColor", Color::WHITE) == nullptr){
+                        meshMat->AddUniform<Color>("uMaterial.specularColor", Color::WHITE);
+                    }
+                    //Print(PrintCode::INFO, "IMPORT_GEOMETRY_MODEL", "Specular texture is null. Applying Color::WHITE.");
+                }
+            } else {
+                meshMat->AddUniform<float>("uMaterial.type", 1);
+                if(meshMat->SetUniformValue<Color>("uMaterial.diffuseColor", Color::CLEAR) == nullptr){
+                    meshMat->AddUniform<Color>("uMaterial.diffuseColor", Color::CLEAR);
+                }
+                if(meshMat->SetUniformValue<Color>("uMaterial.specularColor", Color::CLEAR) == nullptr){
+                    meshMat->AddUniform<Color>("uMaterial.specularColor", Color::CLEAR);
+                }
+                Print(PrintCode::ERROR, "IMPORT_GEOMETRY_MODEL", "Diffuse texture is null. Applying Color::CLEAR to diffuse and specular.");
+                continue;
             }
 
             if(diffuseTex != nullptr && meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuseTex) == nullptr){

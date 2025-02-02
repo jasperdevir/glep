@@ -93,8 +93,8 @@ vec3 diffuseLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, vec3
 
 vec3 specularLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, float shininess, vec3 specularMat){
     vec3 viewDir = normalize(i.viewPos - v.position);
-    vec3 reflectDir = reflect(-dir, norm); 
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    vec3 halfwayDir = normalize(dir + viewDir);  
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), shininess);
 
     return vec3(lightColor * spec * intensity * specularMat);
 }
@@ -189,12 +189,10 @@ void main(){
     if(uMaterial.type == 1){
         matDiffuse = uMaterial.diffuseColor;
         matSpecular = uMaterial.specularColor.rgb;
-    } 
-    else if(uMaterial.type == 2){
+    } else if (uMaterial.type == 2){
         matDiffuse = texture(uMaterial.diffuseTex, v.uv);
         matSpecular = uMaterial.specularColor.rgb;
-    }
-    else if(uMaterial.type == 3){
+    } else if(uMaterial.type == 3){
         matDiffuse = texture(uMaterial.diffuseTex, v.uv);
         matSpecular = texture(uMaterial.specularTex, v.uv).rgb;
     }

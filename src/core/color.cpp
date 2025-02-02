@@ -28,6 +28,7 @@ namespace GLEP {
     const Color Color::CYAN = Color(0.0f, 1.0f, 1.0f);
     const Color Color::WHITE = Color(1.0f);
     const Color Color::BLACK = Color(0.0f);
+    const Color Color::CLEAR = Color(0.0f, 0.0f, 0.0f, 0.0f);
 
     Color::Color(): r(1.0f), g(1.0f), b(1.0f), a(1.0f) {}
 

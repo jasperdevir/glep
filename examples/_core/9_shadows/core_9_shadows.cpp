@@ -53,6 +53,7 @@ int main(){
 
     std::shared_ptr<Material> phongMaterial = std::make_shared<PhongMaterial>(
         Color::WHITE, 
+        Color::WHITE,
         32.0f
     );
     phongMaterial->CastShadows = true; // Enable this material during shadow map rendering
@@ -61,6 +62,7 @@ int main(){
     std::shared_ptr<Texture> floorTexture = std::make_shared<Texture>(File::GLEP_DEFUALT_TEXTURE);
     std::shared_ptr<Material> floorMaterial = std::make_shared<PhongMaterial>(
         floorTexture,
+        Color::WHITE,
         32.0f
     );
     floorMaterial->ReceiveShadows = true; // Enable this material to apply the shadow map result to its lighting

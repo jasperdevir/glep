@@ -101,11 +101,11 @@ namespace GLEP{
             std::shared_ptr<ImportGeometry> _importGeometry;
             std::shared_ptr<Material> _baseMaterial;
 
-            void initialize();
+            void initialize(bool copyUniforms);
 
         public:
-            ImportGeometryModel(std::filesystem::path modelPath, std::shared_ptr<Material> baseMaterial);
-            ImportGeometryModel(std::shared_ptr<ImportGeometry> geometry, std::shared_ptr<Material> baseMaterial);
+            ImportGeometryModel(std::filesystem::path modelPath, std::shared_ptr<Material> baseMaterial, bool copyUniforms = false);
+            ImportGeometryModel(std::shared_ptr<ImportGeometry> geometry, std::shared_ptr<Material> baseMaterial, bool copyUniforms = false);
 
             /// @brief Get the import geometry.
             /// @return Import geometry

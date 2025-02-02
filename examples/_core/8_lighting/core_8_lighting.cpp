@@ -48,10 +48,11 @@ int main(){
 
     /* ---------------------Lit Materials-------------------- */
     std::shared_ptr<Material> textureLambertMaterial = std::make_shared<LambertMaterial>(
-        nullptr
+        std::shared_ptr<Texture>(nullptr)
     );
     std::shared_ptr<Material> texturePhongMaterial = std::make_shared<PhongMaterial>(
-        nullptr, 
+        std::shared_ptr<Texture>(nullptr), 
+        Color::WHITE,
         32.0f
     );
 
@@ -60,6 +61,7 @@ int main(){
     );
     std::shared_ptr<Material> phongMaterial = std::make_shared<PhongMaterial>(
         Color::WHITE, 
+        Color::WHITE,
         32.0f
     );
     /* ------------------------------------------------------ */
@@ -68,6 +70,7 @@ int main(){
     std::shared_ptr<Texture> floorTexture = std::make_shared<Texture>(File::GLEP_DEFUALT_TEXTURE);
     std::shared_ptr<Material> floorMaterial = std::make_shared<PhongMaterial>(
         floorTexture,
+        Color::WHITE,
         32.0f
     );
     
@@ -85,7 +88,7 @@ int main(){
     );
     backpack0->ApplyImportTextures(backpackTextures);
     backpack0->Scale = glm::vec3(0.003f);
-    backpack0->Position = glm::vec3(-1.0f, 0.0f, 1.0f);
+    backpack0->Position = glm::vec3(-1.0f, 0.0f, -1.0f);
     scene->Add(backpack0);
 
     std::shared_ptr<ImportGeometryModel> backpack1 = std::make_shared<ImportGeometryModel>(
@@ -94,7 +97,7 @@ int main(){
     );
     backpack1->ApplyImportTextures(backpackTextures);
     backpack1->Scale = glm::vec3(0.003f);
-    backpack1->Position = glm::vec3(-1.0f, 0.0f, -1.0f);
+    backpack1->Position = glm::vec3(-1.0f, 0.0f, 1.0f);
     scene->Add(backpack1);
 
     std::shared_ptr<ImportGeometry> bunnyGeometry = std::make_shared<ImportGeometry>(File::DIRECTORY / "examples" / "res" / "models" / "bunny" / "bunny.ply");
