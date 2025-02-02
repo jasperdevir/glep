@@ -267,12 +267,9 @@ namespace GLEP {
         }
     }
 
-    TypelessShaderUniform::TypelessShaderUniform(std::string name, bool isPrivate){
+    TypelessShaderUniform::TypelessShaderUniform(std::string name){
         Name = name;
-        _isPrivate = isPrivate;
     }
-
-    bool TypelessShaderUniform::GetIsPrivate(){ return _isPrivate; }
 
     std::shared_ptr<Shader> Material::GetShader() { return _shader; }
     std::string Material::GetName() { return _name; }
@@ -283,9 +280,9 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "utility" / "depthBuffer.fs"
     ){
         _name = "depth_material";
-        AddUniform<float>("uMaterial.nearPlane", nearPlane);
-        AddUniform<float>("uMaterial.farPlane", farPlane);
-        AddUniform<float>("uMaterial.resultScale", resultScale);
+        AddUniform<float>("nearPlane", nearPlane);
+        AddUniform<float>("farPlane", farPlane);
+        AddUniform<float>("resultScale", resultScale);
     }
 
     std::shared_ptr<DepthMaterial> DepthMaterial::FromJson(const json& data){
@@ -315,7 +312,7 @@ namespace GLEP {
     ){
         _name = "skybox_material";
         CullFace = MaterialCull::NONE;
-        AddUniform<std::shared_ptr<TextureCubeMap>>("uMaterial.cubeMap", cubeMap);
+        AddUniform<std::shared_ptr<TextureCubeMap>>("cubeMap", cubeMap);
     }
 
     std::shared_ptr<SkyboxMaterial> SkyboxMaterial::FromJson(const json& data){
@@ -331,8 +328,8 @@ namespace GLEP {
     ){
         _name = "reflection_material";
         BakeRequired = cubeMap == nullptr;
-        AddUniform<std::shared_ptr<CubeMap>>("uMaterial.cubeMap", cubeMap);
-        AddUniform<Color>("uMaterial.tint", tint);
+        AddUniform<std::shared_ptr<CubeMap>>("cubeMap", cubeMap);
+        AddUniform<Color>("tint", tint);
     }
 
     std::shared_ptr<ReflectionMaterial> ReflectionMaterial::FromJson(const json& data){
@@ -349,9 +346,9 @@ namespace GLEP {
     ){
         _name = "refraction_material";
         BakeRequired = cubeMap == nullptr;
-        AddUniform<std::shared_ptr<CubeMap>>("uMaterial.cubeMap", cubeMap);
-        AddUniform<float>("uMaterial.refractiveIndex", refractiveIndex);
-        AddUniform<Color>("uMaterial.tint", tint);
+        AddUniform<std::shared_ptr<CubeMap>>("cubeMap", cubeMap);
+        AddUniform<float>("refractiveIndex", refractiveIndex);
+        AddUniform<Color>("tint", tint);
     }
 
     std::shared_ptr<RefractionMaterial> RefractionMaterial::FromJson(const json& data){
@@ -368,8 +365,8 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "unlit" / "unlit.fs"
     ){
         _name = "unlit_material";
-        AddUniform<int>("uMaterial.type", 1, true);
-        AddUniform<Color>("uMaterial.colorDiffuse", diffuse);
+        AddUniform<int>("type", 1);
+        AddUniform<Color>("colorDiffuse", diffuse);
     }
 
     UnlitMaterial::UnlitMaterial(std::shared_ptr<Texture> diffuse) :
@@ -378,8 +375,8 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "unlit" / "unlit.fs"
     ){
         _name = "unlit_material";
-        AddUniform<int>("uMaterial.type", 2, true);
-        AddUniform<std::shared_ptr<Texture>>("uMaterial.texDiffuse", diffuse);
+        AddUniform<int>("type", 2);
+        AddUniform<std::shared_ptr<Texture>>("texDiffuse", diffuse);
     }
 
     std::shared_ptr<UnlitMaterial> UnlitMaterial::FromJson(const json& data){
@@ -403,8 +400,8 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "lit" / "lambert.fs"
     ){
         _name = "lambert_material";
-        AddUniform<int>("uMaterial.type", 2, true);
-        AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
+        AddUniform<int>("type", 2);
+        AddUniform<std::shared_ptr<Texture>>("diffuseTex", diffuse);
         LightingRequired = true;
     }
 
@@ -414,8 +411,8 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "lit" / "lambert.fs"
     ){
         _name = "lambert_material";
-        AddUniform<int>("uMaterial.type", 1, true);
-        AddUniform<Color>("uMaterial.diffuseColor", diffuse);
+        AddUniform<int>("type", 1);
+        AddUniform<Color>("diffuseColor", diffuse);
         LightingRequired = true;
     }
 
@@ -440,10 +437,10 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "lit" / "phong.fs"
     ){
         _name = "phong_material";
-        AddUniform<int>("uMaterial.type", 1, true);
-        AddUniform<Color>("uMaterial.diffuseColor", diffuse);
-        AddUniform<Color>("uMaterial.specularColor", diffuse);
-        AddUniform<float>("uMaterial.shininess", shininess);
+        AddUniform<int>("type", 1);
+        AddUniform<Color>("diffuseColor", diffuse);
+        AddUniform<Color>("specularColor", diffuse);
+        AddUniform<float>("shininess", shininess);
         LightingRequired = true;
     }
 
@@ -453,10 +450,10 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "lit" / "phong.fs"
     ){
         _name = "phong_material";
-        AddUniform<int>("uMaterial.type", 2, true);
-        AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
-        AddUniform<Color>("uMaterial.specularColor", specular);
-        AddUniform<float>("uMaterial.shininess", shininess);
+        AddUniform<int>("type", 2);
+        AddUniform<std::shared_ptr<Texture>>("diffuseTex", diffuse);
+        AddUniform<Color>("specularColor", specular);
+        AddUniform<float>("shininess", shininess);
         LightingRequired = true;
     }
 
@@ -466,10 +463,10 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "lit" / "phong.fs"
     ){
         _name = "phong_material";
-        AddUniform<int>("uMaterial.type", 3, true);
-        AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
-        AddUniform<std::shared_ptr<Texture>>("uMaterial.specularTex", specular);
-        AddUniform<float>("uMaterial.shininess", shininess);
+        AddUniform<int>("type", 3);
+        AddUniform<std::shared_ptr<Texture>>("diffuseTex", diffuse);
+        AddUniform<std::shared_ptr<Texture>>("specularTex", specular);
+        AddUniform<float>("shininess", shininess);
         LightingRequired = true;
     }
 
@@ -504,10 +501,10 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "lit" / "blinnPhong.fs"
     ){
         _name = "blinn_phong_material";
-        AddUniform<int>("uMaterial.type", 1, true);
-        AddUniform<Color>("uMaterial.diffuseColor", diffuse);
-        AddUniform<Color>("uMaterial.specularColor", specular);
-        AddUniform<float>("uMaterial.shininess", shininess);
+        AddUniform<int>("type", 1);
+        AddUniform<Color>("diffuseColor", diffuse);
+        AddUniform<Color>("specularColor", specular);
+        AddUniform<float>("shininess", shininess);
         LightingRequired = true;
     }
 
@@ -517,10 +514,10 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "lit" / "blinnPhong.fs"
     ){
         _name = "blinn_phong_material";
-        AddUniform<int>("uMaterial.type", 2, true);
-        AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
-        AddUniform<Color>("uMaterial.specularColor", specular);
-        AddUniform<float>("uMaterial.shininess", shininess);
+        AddUniform<int>("type", 2);
+        AddUniform<std::shared_ptr<Texture>>("diffuseTex", diffuse);
+        AddUniform<Color>("specularColor", specular);
+        AddUniform<float>("shininess", shininess);
         LightingRequired = true;
     }
 
@@ -530,10 +527,10 @@ namespace GLEP {
         File::GLEP_SHADERS_PATH / "lit" / "blinnPhong.fs"
     ){
         _name = "blinn_phong_material";
-        AddUniform<int>("uMaterial.type", 3, true);
-        AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
-        AddUniform<std::shared_ptr<Texture>>("uMaterial.specularTex", specular);
-        AddUniform<float>("uMaterial.shininess", shininess);
+        AddUniform<int>("type", 3);
+        AddUniform<std::shared_ptr<Texture>>("diffuseTex", diffuse);
+        AddUniform<std::shared_ptr<Texture>>("specularTex", specular);
+        AddUniform<float>("shininess", shininess);
         LightingRequired = true;
     }
 

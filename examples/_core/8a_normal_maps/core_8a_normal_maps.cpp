@@ -12,8 +12,8 @@ std::shared_ptr<Material> phong;
 void key_callback(Window* window, KeyCode key, int scancode, InputState state, KeyMod mod){
     if(state == InputState::PRESS){
         if(key == KeyCode::SPACE){
-            blinnPhong->SetUniformValue<bool>("uMaterial.hasNormalMap", !blinnPhong->GetUniform<bool>("uMaterial.hasNormalMap")->Value);
-            phong->SetUniformValue<bool>("uMaterial.hasNormalMap", !phong->GetUniform<bool>("uMaterial.hasNormalMap")->Value);
+            blinnPhong->SetUniformValue<bool>("hasNormalMap", !blinnPhong->GetUniformValue<bool>("hasNormalMap", false));
+            phong->SetUniformValue<bool>("hasNormalMap", !phong->GetUniformValue<bool>("hasNormalMap", false));
         }
     }
 }
@@ -49,16 +49,24 @@ int main(){
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 
-    std::shared_ptr<Texture> diffuseTex = std::make_shared<Texture>(File::DIRECTORY / "brickwall.jpg");
-    std::shared_ptr<Texture> normalTex = std::make_shared<Texture>(File::DIRECTORY / "brickwall_normal.jpg", TextureType::NORMAL);
+    std::shared_ptr<Texture> diffuseTex = std::make_shared<Texture>(File::DIRECTORY / "examples" / "res" / "textures" / "brickwall.jpg");
+    std::shared_ptr<Texture> normalTex = std::make_shared<Texture>(File::DIRECTORY / "examples" / "res" / "textures" / "brickwall_normal.jpg", TextureType::NORMAL);
 
     std::shared_ptr<Geometry> planeGeometry = std::make_shared<PlaneGeometry>(1.0f, 1.0f);
     blinnPhong = std::make_shared<BlinnPhongMaterial>(diffuseTex, Color(1.0f), 16.0f);
+    blinnPhong->AddUniform<std::shared_ptr<Texture>>("normalTex", normalTex);
+
+    for(auto& u : blinnPhong->GetUniforms()){
+        Print(PrintCode::INFO, u->Name);
+    }
+
     phong = std::make_shared<PhongMaterial>(diffuseTex, Color(1.0f), 32.0f);
-    phong->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
-    phong->AddUniform<bool>("uMaterial.hasNormalMap", true);
-    blinnPhong->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
-    blinnPhong->AddUniform<bool>("uMaterial.hasNormalMap", true);
+    phong->AddUniform<std::shared_ptr<Texture>>("normalTex", normalTex);
+
+    for(auto& u : phong->GetUniforms()){
+        Print(PrintCode::INFO, u->Name);
+    }
+
     std::shared_ptr<Model> plane0 = std::make_shared<Model>(planeGeometry, blinnPhong);
     //plane0->Rotation = glm::lookAt(glm::vec3(0.0f), Camera::UP, Camera::FRONT);
     plane0->Position.x = -1.0f;
@@ -70,13 +78,13 @@ int main(){
 
     std::shared_ptr<AmbientLight> ambientLight = std::make_shared<AmbientLight>(Color(1.0f), 0.2f);
     scene->Add(ambientLight);
-    std::shared_ptr<PointLight> pointLight0 = std::make_shared<PointLight>(glm::vec3(0.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
-    scene->Add(pointLight0);
-    //std::shared_ptr<PointLight> pointLight1 = std::make_shared<PointLight>(glm::vec3(1.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
+    std::shared_ptr<PointLight> pointLight0 = std::make_shared<PointLight>(glm::vec3(-1.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
+    //scene->Add(pointLight0);
+    std::shared_ptr<PointLight> pointLight1 = std::make_shared<PointLight>(glm::vec3(1.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
     //scene->Add(pointLight1);
 
-    //std::shared_ptr<DirectionalLight> directionalLight = std::make_shared<DirectionalLight>(glm::vec3(0.2f, -1.0f, 0.0f), Color(1.0f), 1.0f);
-    //scene->Add(directionalLight);
+    std::shared_ptr<DirectionalLight> directionalLight = std::make_shared<DirectionalLight>(glm::vec3(0.0f, -1.0f, -1.0f), Color(1.0f), 1.0f);
+    scene->Add(directionalLight);
 
     /*
     std::shared_ptr<SpotLight> spotLight0 = std::make_shared<SpotLight>(
