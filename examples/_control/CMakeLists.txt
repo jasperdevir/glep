@@ -35,6 +35,7 @@ foreach(project_file ${PROJECTS})
             "-framework Cocoa"
             "-framework Foundation"
             "-framework OpenGL"
+            "-framework Metal"
         )
     else()
         # For non-Apple-specific settings

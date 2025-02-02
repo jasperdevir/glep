@@ -103,6 +103,7 @@ if(APPLE)
         "-framework Cocoa"
         "-framework Foundation"
         "-framework OpenGL"
+        "-framework Metal"
     )
 else()
     target_link_libraries(GLEP 
