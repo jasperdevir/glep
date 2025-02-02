@@ -81,6 +81,9 @@ namespace GLEP{
 
             /// @brief Color(0.0f, 0.0f, 0.0f, 1.0f)
             static const Color BLACK;
+
+            /// @brief Color(0.0f, 0.0f, 0.0f, 0.0f);
+            static const Color CLEAR;
     };
 
 }

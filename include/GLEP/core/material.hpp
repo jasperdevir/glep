@@ -359,14 +359,26 @@ namespace GLEP{
 
     class PhongMaterial : public Material{
         public:
-            PhongMaterial(Color diffuse, float shininess);
-            PhongMaterial(std::shared_ptr<Texture> diffuse, float shininess);
+            PhongMaterial(Color diffuse, Color specular, float shininess);
+            PhongMaterial(std::shared_ptr<Texture> diffuse, Color specular, float shininess);
             PhongMaterial(std::shared_ptr<Texture> diffuse, std::shared_ptr<Texture> specular, float shininess);
 
             /// @brief Deserialize data from JSON format.
             /// @param data PhongMaterial data in JSON format
             /// @return Deserialized PhongMaterial
             static std::shared_ptr<PhongMaterial> FromJson(const json& data);
+    };
+
+    class BlinnPhongMaterial : public Material{
+        public:
+            BlinnPhongMaterial(Color diffuse, Color specular, float shininess);
+            BlinnPhongMaterial(std::shared_ptr<Texture> diffuse, Color specular, float shininess);
+            BlinnPhongMaterial(std::shared_ptr<Texture> diffuse, std::shared_ptr<Texture> specular, float shininess);
+
+            /// @brief Deserialize data from JSON format.
+            /// @param data BlinnPhongMaterial data in JSON format
+            /// @return Deserialized BlinnPhongMaterial
+            static std::shared_ptr<BlinnPhongMaterial> FromJson(const json& data);
     };
 
 }
