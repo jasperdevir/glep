@@ -6,6 +6,18 @@ using namespace GLEP::Control;
 
 const glm::vec2 screenResolution = glm::vec2(1200, 800);
 
+std::shared_ptr<Material> blinnPhong;
+std::shared_ptr<Material> phong;
+
+void key_callback(Window* window, KeyCode key, int scancode, InputState state, KeyMod mod){
+    if(state == InputState::PRESS){
+        if(key == KeyCode::SPACE){
+            blinnPhong->SetUniformValue<bool>("uMaterial.hasNormalMap", !blinnPhong->GetUniform<bool>("uMaterial.hasNormalMap")->Value);
+            phong->SetUniformValue<bool>("uMaterial.hasNormalMap", !phong->GetUniform<bool>("uMaterial.hasNormalMap")->Value);
+        }
+    }
+}
+
 int main(){
 
     std::shared_ptr<Window> window = std::make_shared<Window>(
@@ -41,27 +53,27 @@ int main(){
     std::shared_ptr<Texture> normalTex = std::make_shared<Texture>(File::DIRECTORY / "brickwall_normal.jpg", TextureType::NORMAL);
 
     std::shared_ptr<Geometry> planeGeometry = std::make_shared<PlaneGeometry>(1.0f, 1.0f);
-    std::shared_ptr<Material> normalMaterial = std::make_shared<BlinnPhongMaterial>(diffuseTex, Color(1.0f), 16.0f);
-    std::shared_ptr<Material> phongMaterial = std::make_shared<PhongMaterial>(diffuseTex, Color(1.0f), 8.0f);
-    phongMaterial->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
-    phongMaterial->AddUniform<bool>("uMaterial.hasNormalMap", true);
-    normalMaterial->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
-    normalMaterial->AddUniform<bool>("uMaterial.hasNormalMap", true);
-    std::shared_ptr<Model> plane0 = std::make_shared<Model>(planeGeometry, normalMaterial);
+    blinnPhong = std::make_shared<BlinnPhongMaterial>(diffuseTex, Color(1.0f), 16.0f);
+    phong = std::make_shared<PhongMaterial>(diffuseTex, Color(1.0f), 32.0f);
+    phong->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
+    phong->AddUniform<bool>("uMaterial.hasNormalMap", true);
+    blinnPhong->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
+    blinnPhong->AddUniform<bool>("uMaterial.hasNormalMap", true);
+    std::shared_ptr<Model> plane0 = std::make_shared<Model>(planeGeometry, blinnPhong);
     //plane0->Rotation = glm::lookAt(glm::vec3(0.0f), Camera::UP, Camera::FRONT);
     plane0->Position.x = -1.0f;
     scene->Add(plane0);
-    std::shared_ptr<Model> plane1 = std::make_shared<Model>(planeGeometry, phongMaterial);
+    std::shared_ptr<Model> plane1 = std::make_shared<Model>(planeGeometry, phong);
     //plane1->Rotation = glm::lookAt(glm::vec3(0.0f), Camera::UP, Camera::FRONT);
     plane1->Position.x = 1.0f;
     scene->Add(plane1);
 
     std::shared_ptr<AmbientLight> ambientLight = std::make_shared<AmbientLight>(Color(1.0f), 0.2f);
     scene->Add(ambientLight);
-    std::shared_ptr<PointLight> pointLight0 = std::make_shared<PointLight>(glm::vec3(-1.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
+    std::shared_ptr<PointLight> pointLight0 = std::make_shared<PointLight>(glm::vec3(0.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
     scene->Add(pointLight0);
-    std::shared_ptr<PointLight> pointLight1 = std::make_shared<PointLight>(glm::vec3(1.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
-    scene->Add(pointLight1);
+    //std::shared_ptr<PointLight> pointLight1 = std::make_shared<PointLight>(glm::vec3(1.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
+    //scene->Add(pointLight1);
 
     //std::shared_ptr<DirectionalLight> directionalLight = std::make_shared<DirectionalLight>(glm::vec3(0.2f, -1.0f, 0.0f), Color(1.0f), 1.0f);
     //scene->Add(directionalLight);
@@ -114,19 +126,15 @@ int main(){
         ImGui::End();
     };
     */
+
+    Input::SetKeyCallback(renderer->TargetWindow, key_callback);
     
-
-
     /* ---------------------Render Loop---------------------- */
     while(renderer->IsRunning()){
         Time::Update(); // Update internal clock
         Input::Update(renderer->TargetWindow); // Update user input
 
         firstPersonController->Update(renderer->TargetWindow); //Update each frame
-
-        if(Input::GetInput(renderer->TargetWindow, KeyCode::SPACE) == InputState::PRESS){
-            normalMaterial->SetUniformValue<bool>("uMaterial.hasNormalMap", !normalMaterial->GetUniform<bool>("uMaterial.hasNormalMap")->Value);
-        }
 
         renderer->Render(scene); // Render 
         renderer->EndFrame(); // End frame, poll events

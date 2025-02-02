@@ -234,10 +234,14 @@ namespace GLEP{
                 if(meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex) == nullptr)
                     meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
                 meshMat->SetUniform("uMaterial.hasNormalMap", true);
+                Print(PrintCode::INFO, "IMPORT_GEOMETRY_MODEL", "Normal map has been assigned.");
             }
 
-            if(heightTex != nullptr && meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.heightTex", heightTex) == nullptr){
-                meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.heightTex", heightTex);
+            if(heightTex != nullptr){
+                if(meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.normalTex", heightTex) == nullptr)
+                    meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", heightTex);
+                meshMat->SetUniform("uMaterial.hasNormalMap", true);
+                Print(PrintCode::INFO, "IMPORT_GEOMETRY_MODEL", "Normal map has been assigned.");
             }
         }
     }

@@ -96,7 +96,7 @@ vec3 diffuseLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, vec3
     return vec3(lightColor * diff * intensity * diffuseMat);
 }
 
-vec3 specularLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, float shininess, vec3 specularMat){
+vec3 specularLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, vec3 specularMat){
     vec3 viewDir = vec3(0.0f);
     if(uMaterial.hasNormalMap){
         viewDir = normalize(i.tangentViewPos - v.tangentPosition);
@@ -104,7 +104,7 @@ vec3 specularLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, flo
         viewDir = normalize(i.viewPos - v.position);
     }
     vec3 halfwayDir = normalize(dir + viewDir);  
-    float spec = pow(max(dot(norm, halfwayDir), 0.0), shininess);
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), uMaterial.shininess);
 
     return vec3(lightColor * spec * intensity * specularMat);
 }
@@ -124,7 +124,7 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 matDiffuse, vec3 matSpecul
 
     vec3 diffuse = diffuseLighting(lightDir, normal, light.color.rgb, light.intensity, matDiffuse);
 
-    vec3 specular = specularLighting(lightDir, normal, light.color.rgb, light.intensity, uMaterial.shininess, matSpecular);
+    vec3 specular = specularLighting(lightDir, normal, light.color.rgb, light.intensity, matSpecular);
 
     float dist = length(light.position - v.position);
     float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
@@ -149,7 +149,7 @@ vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 matDiffuse, 
 
     vec3 diffuse = diffuseLighting(lightDir, normal, light.color.rgb, light.intensity, matDiffuse);
 
-    vec3 specular = specularLighting(lightDir, normal, light.color.rgb, light.intensity, uMaterial.shininess, matSpecular);
+    vec3 specular = specularLighting(lightDir, normal, light.color.rgb, light.intensity, matSpecular);
 
     return diffuse + specular;
 }
@@ -165,7 +165,7 @@ vec3 calcPointLight(PointLight light, vec3 normal, vec3 matDiffuse, vec3 matSpec
 
     vec3 diffuse = diffuseLighting(lightDir, normal, light.color.rgb, light.intensity, matDiffuse);
 
-    vec3 specular = specularLighting(lightDir, normal, light.color.rgb, light.intensity, uMaterial.shininess, matSpecular);
+    vec3 specular = specularLighting(lightDir, normal, light.color.rgb, light.intensity, matSpecular);
 
     float dist = length(light.position - v.position);
     float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));

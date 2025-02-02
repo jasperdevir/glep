@@ -455,7 +455,7 @@ namespace GLEP {
         _name = "phong_material";
         AddUniform<int>("uMaterial.type", 2, true);
         AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
-        AddUniform<Color>("uMaterial.specularTex", specular);
+        AddUniform<Color>("uMaterial.specularColor", specular);
         AddUniform<float>("uMaterial.shininess", shininess);
         LightingRequired = true;
     }
