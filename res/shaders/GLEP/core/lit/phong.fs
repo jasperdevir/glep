@@ -259,7 +259,7 @@ void main(){
 
     vec3 normal = v.tbn[2];
     if(uMaterial.hasNormalMap){
-        normal = texture(uMaterial.normalTex, v.uv).rgb;
+        normal = texture(uMaterial.normalTex, texCoords).rgb;
         normal = normalize(normal * 2.0 - 1.0);
     }
 
@@ -267,11 +267,11 @@ void main(){
         matDiffuse = uMaterial.diffuseColor;
         matSpecular = uMaterial.specularColor.rgb;
     } else if (uMaterial.type == 2){
-        matDiffuse = texture(uMaterial.diffuseTex, v.uv);
+        matDiffuse = texture(uMaterial.diffuseTex, texCoords);
         matSpecular = uMaterial.specularColor.rgb;
     } else if(uMaterial.type == 3){
-        matDiffuse = texture(uMaterial.diffuseTex, v.uv);
-        matSpecular = texture(uMaterial.specularTex, v.uv).rgb;
+        matDiffuse = texture(uMaterial.diffuseTex, texCoords);
+        matSpecular = texture(uMaterial.specularTex, texCoords).rgb;
     }
     
     vec3 ambient = uAmbient.color.rgb * uAmbient.intensity * matDiffuse.rgb;

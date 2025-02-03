@@ -364,7 +364,8 @@ namespace GLEP {
         for (Vertex vertex : frontFace) {
             vertex.Position.z += 0.5f * _depth; 
             vertex.Position.z -= _depth;
-            vertex.Normal = glm::vec3(0.0f, 0.0f, -1.0f);
+            vertex.Normal = glm::vec3(0.0f, 0.0f, 1.0f);
+            vertex.Tangent = glm::vec3(1.0f, 0.0f, 0.0f);
             vertex.TexCoord = glm::vec2(vertex.Position.x / _width + 0.5f, vertex.Position.y / _height + 0.5f);
             _vertices.push_back(vertex);
         }
@@ -377,7 +378,8 @@ namespace GLEP {
         for (Vertex vertex : backFace) {
             vertex.Position.z -= 0.5f * _depth;
             vertex.Position.z -= _depth;
-            vertex.Normal = glm::vec3(0.0f, 0.0f, 1.0f);
+            vertex.Normal = glm::vec3(0.0f, 0.0f, -1.0f);
+            vertex.Tangent = glm::vec3(1.0f, 0.0f, 0.0f);
             vertex.TexCoord = glm::vec2(vertex.Position.x / _width + 0.5f, vertex.Position.y / _height + 0.5f);
             _vertices.push_back(vertex);
         }
@@ -393,7 +395,8 @@ namespace GLEP {
             vertex.Position.x -= _width; 
             vertex.Position.z = x; 
             vertex.Normal = glm::vec3(-1.0f, 0.0f, 0.0f);
-            vertex.TexCoord = glm::vec2(vertex.Position.y / _height + 0.5f, vertex.Position.z / _depth + 0.5f);
+            vertex.Tangent = glm::vec3(0.0f, 0.0f, 1.0f);
+            vertex.TexCoord = glm::vec2(vertex.Position.z / _depth + 0.5f, vertex.Position.y / _height + 0.5f);
             _vertices.push_back(vertex);
         }
 
@@ -407,42 +410,47 @@ namespace GLEP {
             vertex.Position.x = vertex.Position.z + 0.5f * _width; 
             vertex.Position.x -= _width; 
             vertex.Position.z = x;
-            vertex.Normal = glm::vec3(1.0f, 0.0f, 0.0f);
-            vertex.TexCoord = glm::vec2(vertex.Position.y / _height + 0.5f, vertex.Position.z / _depth + 0.5f);
+            vertex.Normal = glm::vec3(-1.0f, 0.0f, 0.0f);
+            vertex.Tangent = glm::vec3(0.0f, 0.0f, 1.0f);
+            vertex.TexCoord = glm::vec2(vertex.Position.z / _depth + 0.5f, vertex.Position.y / _height + 0.5f);
             _vertices.push_back(vertex);
         }
         
-        //Top
-        std::vector<unsigned int> topIndices = GeneratePlaneIndices(_widthSegments, _depthSegments, (int)_vertices.size());
-        _indices.insert(_indices.end(), topIndices.begin(), topIndices.end());
+        //Bottom
+        std::vector<unsigned int> botIndices = GeneratePlaneIndices(_widthSegments, _depthSegments, (int)_vertices.size());
+        _indices.insert(_indices.end(), botIndices.begin(), botIndices.end());
         
-        std::vector<Vertex> topFace = GeneratePlaneVertices(_width, _depth, _height, _widthSegments, _depthSegments);
-        for (Vertex vertex : topFace) {
+        std::vector<Vertex> botFace = GeneratePlaneVertices(_width, _depth, _height, _widthSegments, _depthSegments);
+        for (Vertex vertex : botFace) {
             float y = vertex.Position.y;
-            vertex.Position.y = vertex.Position.z - 0.5f * _height; 
+            vertex.Position.y = vertex.Position.z - 0.5f * _height;
             vertex.Position.y -= _height;
             vertex.Position.z = y + 1.0f * _depth;
             vertex.Position.z -= _depth;
-            vertex.Normal = glm::vec3(0.0f, -1.0f, 0.0f); 
+            vertex.Normal = glm::vec3(0.0f, -1.0f, 0.0f);
+            vertex.Tangent = glm::vec3(1.0f, 0.0f, 0.0f);
             vertex.TexCoord = glm::vec2(vertex.Position.x / _width + 0.5f, vertex.Position.z / _depth + 0.5f);
             _vertices.push_back(vertex);
         }
 
-        //Bottom
-        std::vector<unsigned int> botIndices = GeneratePlaneIndices(_widthSegments, _depthSegments, (int)_vertices.size());
-        _indices.insert(_indices.end(), botIndices.begin(), botIndices.end());
+        //Top
+        std::vector<unsigned int> topIndices = GeneratePlaneIndices(_widthSegments, _depthSegments, (int)_vertices.size());
+        _indices.insert(_indices.end(), topIndices.begin(), topIndices.end());
 
-        std::vector<Vertex> bottomFace = GeneratePlaneVertices(_width, _depth, _height, _widthSegments, _depthSegments);
-        for (Vertex vertex : bottomFace) {
+        std::vector<Vertex> topFace = GeneratePlaneVertices(_width, _depth, _height, _widthSegments, _depthSegments);
+        for (Vertex vertex : topFace) {
             float y = vertex.Position.y;
             vertex.Position.y = vertex.Position.z + 0.5f * _height;
             vertex.Position.y -= _height;
             vertex.Position.z = -y + 1.0f * _depth;
             vertex.Position.z -= _depth;
-            vertex.Normal = glm::vec3(0.0f, 1.0f, 0.0f);  
+            vertex.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            vertex.Tangent = glm::vec3(1.0f, 0.0f, 0.0f);
             vertex.TexCoord = glm::vec2(vertex.Position.x / _width + 0.5f, vertex.Position.z / _depth + 0.5f);
             _vertices.push_back(vertex);
         }
+
+        //CalculateNormals();
         
     }
 
@@ -587,7 +595,7 @@ namespace GLEP {
                 x *= _width;
                 y *= _height;
                 
-                _vertices.push_back(Vertex(glm::vec3(x, y, z), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+                _vertices.push_back(Vertex(glm::vec3(x, y, z), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
             }
         }
 

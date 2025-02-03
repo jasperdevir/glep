@@ -71,6 +71,7 @@ struct Framebuffer {
 };
 
 in Vertex v;
+in GLEPInfo i;
 out vec4 FragColor;
 
 #define MAX_POINT_LIGHTS 50
@@ -229,14 +230,14 @@ void main(){
 
     vec3 normal = v.tbn[2];
     if(uMaterial.hasNormalMap){
-        normal = texture(uMaterial.normalTex, v.uv).rgb;
+        normal = texture(uMaterial.normalTex, texCoords).rgb;
         normal = normalize(normal * 2.0 - 1.0);
     }
 
     if(uMaterial.type == 1){
         diffuseMat = uMaterial.diffuseColor;
     } else if(uMaterial.type == 2){
-        diffuseMat = texture(uMaterial.diffuseTex, v.uv);
+        diffuseMat = texture(uMaterial.diffuseTex, texCoords);
     }
 
     vec3 ambient = uAmbient.color.rgb * uAmbient.intensity * diffuseMat.rgb;

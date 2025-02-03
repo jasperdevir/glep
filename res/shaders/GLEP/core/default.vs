@@ -36,11 +36,12 @@ void main(){
     v.position = vec3(model * vec4(aPos, 1.0));
     v.uv = aTexCoords;
     v.lightSpacePosition = lightSpaceMatrix * vec4(v.position, 1.0);
-    vec3 N = normalize(vec3(model * vec4(aNormal, 0.0)));
-    vec3 T = normalize(vec3(model * vec4(aTangent, 0.0)));
+    mat3 normalMatrix = transpose(inverse(mat3(model)));
+    vec3 T = normalize(normalMatrix * aTangent);
+    vec3 N = normalize(normalMatrix * aNormal);
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);
-    v.tbn = mat3(T,B,N);
+    v.tbn = transpose(mat3(T,B,N));
     v.tangentPosition = v.tbn * v.position;
 
     i.time = time;
