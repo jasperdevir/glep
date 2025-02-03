@@ -157,9 +157,9 @@ source->Play();
 ## Goals
 ### Short-term
 - Light Helper Classes
-- Point Shadow Maps
-- Normal Map Support
-- Height Map Support
+- Point Shadow Maps (In Progress)
+- Normal Map Support (Implemented - Needs Testing)
+- Height Map Support (Implemented - Needs Testing)
 - Reflection Map Support
 ### Long-term
 - Linux Support
