@@ -158,7 +158,8 @@ namespace GLEP {
     std::shared_ptr<Geometry> Geometry::FromJson(const json& data){
         std::shared_ptr<Geometry> result;
 
-        if(data["type"] == "geometry"){
+        std::string type = data["type"];
+        if(type == "geometry"){
             std::vector<Vertex> vertices;
             for(int i = 0; i < data["vertices"].size(); i++){
                 vertices.push_back(Vertex::FromJson(data["vertices"][i]));
@@ -170,12 +171,14 @@ namespace GLEP {
             }
 
             result = std::make_shared<Geometry>(vertices, indices);
-        } else if(data["type"] == "cube_geometry"){
+        } else if(type == "cube_geometry"){
             result = CubeGeometry::FromJson(data);
-        } else if(data["type"] == "plane_geometry"){
+        } else if(type == "plane_geometry"){
             result = PlaneGeometry::FromJson(data);
-        } else if (data["type"] == "grid_geometry"){
+        } else if (type == "grid_geometry"){
             result = GridGeometry::FromJson(data);
+        } else if (type == "line_geometry"){
+            result = LineGeometry::FromJson(data);
         } else {
             Print(PrintCode::ERROR, "GEOMETRY", "Unknown Geometry type: " + data["type"]);
             return nullptr;
@@ -657,6 +660,7 @@ namespace GLEP {
 
     json LineGeometry::ToJson(){
         json j;
+        j["type"] = "line_geometry";
         j["start_point"] = Math::ToJson(GetStartPoint());
         j["end_point"] = Math::ToJson(GetEndPoint());
         return j;

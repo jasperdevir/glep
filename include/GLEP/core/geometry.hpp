@@ -344,18 +344,32 @@ namespace GLEP{
         public:
             LineGeometry(glm::vec3 startPoint, glm::vec3 endPoint);
 
+            /// @brief Get the start point of the line.
+            /// @return Start point
             glm::vec3 GetStartPoint();
 
+            /// @brief Get the end point of the line.
+            /// @return End point
             glm::vec3 GetEndPoint();
 
+            /// @brief Set the start point of the line.
+            /// @param startPoint Start point to set
             void SetStartPoint(glm::vec3 startPoint);
 
+            /// @brief Set the end point of the line.
+            /// @param endPoint End point to set
             void SetEndPoint(glm::vec3 endPoint);
 
+            /// @brief If data has been initialized, bind the vertex array, and draw a line from the start point to the end point.
             void Draw() override;
 
+            /// @brief Serialize data to JSON format.
+            /// @return Serailized data
             json ToJson() override;
 
+            /// @brief Deserialize data from JSON format.
+            /// @param data LineGeometry data in JSON format
+            /// @return Deserialized LineGeometry
             static std::shared_ptr<LineGeometry> FromJson(const json& data);
     };
 
