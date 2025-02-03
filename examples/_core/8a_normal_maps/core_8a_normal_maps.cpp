@@ -11,9 +11,13 @@ std::shared_ptr<Material> phong;
 
 void key_callback(Window* window, KeyCode key, int scancode, InputState state, KeyMod mod){
     if(state == InputState::PRESS){
-        if(key == KeyCode::SPACE){
+        if(key == KeyCode::KEY_1){
             blinnPhong->SetUniformValue<bool>("hasNormalMap", !blinnPhong->GetUniformValue<bool>("hasNormalMap", false));
             phong->SetUniformValue<bool>("hasNormalMap", !phong->GetUniformValue<bool>("hasNormalMap", false));
+        }
+        if(key == KeyCode::KEY_2){
+            blinnPhong->SetUniformValue<bool>("hasDepthTex", !blinnPhong->GetUniformValue<bool>("hasDepthTex", false));
+            phong->SetUniformValue<bool>("hasDepthTex", !phong->GetUniformValue<bool>("hasDepthTex", false));
         }
     }
 }
@@ -49,12 +53,15 @@ int main(){
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 
-    std::shared_ptr<Texture> diffuseTex = std::make_shared<Texture>(File::DIRECTORY / "examples" / "res" / "textures" / "brickwall.jpg");
-    std::shared_ptr<Texture> normalTex = std::make_shared<Texture>(File::DIRECTORY / "examples" / "res" / "textures" / "brickwall_normal.jpg", TextureType::NORMAL);
+    std::shared_ptr<Texture> diffuseTex = std::make_shared<Texture>(File::DIRECTORY / "examples" / "res" / "textures" / "bricks2.jpg");
+    std::shared_ptr<Texture> normalTex = std::make_shared<Texture>(File::DIRECTORY / "examples" / "res" / "textures" / "bricks2_normal.jpg", TextureType::NORMAL);
+    std::shared_ptr<Texture> depthTex = std::make_shared<Texture>(File::DIRECTORY / "examples" / "res" / "textures" / "bricks2_disp.jpg", TextureType::HEIGHT);
 
     std::shared_ptr<Geometry> planeGeometry = std::make_shared<PlaneGeometry>(1.0f, 1.0f);
     blinnPhong = std::make_shared<BlinnPhongMaterial>(diffuseTex, Color(1.0f), 16.0f);
     blinnPhong->AddUniform<std::shared_ptr<Texture>>("normalTex", normalTex);
+    blinnPhong->AddUniform<std::shared_ptr<Texture>>("depthTex", depthTex);
+    blinnPhong->SetUniformValue<float>("depthScale", 0.1f);
 
     for(auto& u : blinnPhong->GetUniforms()){
         Print(PrintCode::INFO, u->Name);
@@ -62,6 +69,8 @@ int main(){
 
     phong = std::make_shared<PhongMaterial>(diffuseTex, Color(1.0f), 32.0f);
     phong->AddUniform<std::shared_ptr<Texture>>("normalTex", normalTex);
+    phong->AddUniform<std::shared_ptr<Texture>>("depthTex", depthTex);
+    phong->SetUniformValue<float>("depthScale", 0.1f);
 
     for(auto& u : phong->GetUniforms()){
         Print(PrintCode::INFO, u->Name);
@@ -79,12 +88,12 @@ int main(){
     std::shared_ptr<AmbientLight> ambientLight = std::make_shared<AmbientLight>(Color(1.0f), 0.2f);
     scene->Add(ambientLight);
     std::shared_ptr<PointLight> pointLight0 = std::make_shared<PointLight>(glm::vec3(-1.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
-    //scene->Add(pointLight0);
+    scene->Add(pointLight0);
     std::shared_ptr<PointLight> pointLight1 = std::make_shared<PointLight>(glm::vec3(1.0f, 0.5f, 0.5f), Color(1.0f), 1.0f, 1.0f, 0.09f, 0.032f);
-    //scene->Add(pointLight1);
+    scene->Add(pointLight1);
 
     std::shared_ptr<DirectionalLight> directionalLight = std::make_shared<DirectionalLight>(glm::vec3(0.0f, -1.0f, -1.0f), Color(1.0f), 1.0f);
-    scene->Add(directionalLight);
+    //scene->Add(directionalLight);
 
     /*
     std::shared_ptr<SpotLight> spotLight0 = std::make_shared<SpotLight>(

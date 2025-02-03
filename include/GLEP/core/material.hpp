@@ -104,8 +104,13 @@ namespace GLEP{
             /// @param value Uniform value
             template <typename T>
             void AddUniform(const std::string& name, T value) {
-                if(name == "normalTex" && GetUniform<bool>("hasNormalMap") == nullptr)
-                    AddUniform("hasNormalMap", true);
+                if(name == "normalTex" && GetUniform<bool>("hasNormalMap") == nullptr){
+                    AddUniform<bool>("hasNormalMap", true);
+                } else if (name == "depthTex" && GetUniform<bool>("hasDepthTex") == nullptr){
+                    AddUniform<bool>("hasDepthTex", true);
+                    AddUniform<float>("depthScale", 1.0f);
+                }
+
 
                 std::string uniformName = "uMaterial." + name;
                 std::shared_ptr<ShaderUniform<T>> uniform = std::make_shared<ShaderUniform<T>>(uniformName, value);
