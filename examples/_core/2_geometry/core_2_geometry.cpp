@@ -101,6 +101,11 @@ int main(){
         6,    // Width Segments
         6     // Height Segments
     );
+
+    std::shared_ptr<Geometry> lineGeometry = std::make_shared<LineGeometry>(
+        glm::vec3(-1.0f, 0.0f, 0.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f)
+    );
     /* ------------------------------------------------------ */
 
     /* ---------Initialize Objects and Add to Scene---------- */
@@ -128,6 +133,11 @@ int main(){
     std::shared_ptr<Model> grid = std::make_shared<Model>(gridGeometry, material);
     grid->Position.x = 1.5f; //Set object position on the X axis
     scene->Add(grid);
+
+    std::shared_ptr<Model> line = std::make_shared<Model>(lineGeometry, material);
+    line->Position.y = 1.0f;
+    scene->Add(line);
+
     /* ------------------------------------------------------ */
 
     /* ---------------------Render Loop---------------------- */

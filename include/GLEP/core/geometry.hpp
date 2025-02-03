@@ -44,6 +44,10 @@ namespace GLEP{
 
         Vertex(){};
 
+        Vertex(glm::vec3 position){
+            Position = position;
+        }
+
         Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 texCoord){
             Position = position;
             Normal = normal;
@@ -334,6 +338,25 @@ namespace GLEP{
             /// @param data GridGeometry data in JSON format
             /// @return Deserialized GridGeometry
             static std::shared_ptr<GridGeometry> FromJson(const json& data);
+    };
+
+    class LineGeometry : public Geometry {
+        public:
+            LineGeometry(glm::vec3 startPoint, glm::vec3 endPoint);
+
+            glm::vec3 GetStartPoint();
+
+            glm::vec3 GetEndPoint();
+
+            void SetStartPoint(glm::vec3 startPoint);
+
+            void SetEndPoint(glm::vec3 endPoint);
+
+            void Draw() override;
+
+            json ToJson() override;
+
+            static std::shared_ptr<LineGeometry> FromJson(const json& data);
     };
 
 }

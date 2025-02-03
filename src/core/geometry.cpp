@@ -613,4 +613,59 @@ namespace GLEP {
             data["height_segments"]
         );
     }
+
+    LineGeometry::LineGeometry(glm::vec3 startPoint, glm::vec3 endPoint){
+        _vertices = {
+            Vertex(startPoint),
+            Vertex(endPoint)
+        };
+
+        _indices = {
+            0, 1
+        };
+
+        initialize();
+    }
+
+    glm::vec3 LineGeometry::GetStartPoint(){
+        if(_vertices.size() < 1)
+            return glm::vec3(0.0f);
+
+        return _vertices[0].Position;
+    }
+
+    glm::vec3 LineGeometry::GetEndPoint(){
+        if(_vertices.size() < 2)
+            return glm::vec3(0.0f);
+            
+        return _vertices[1].Position;
+    }
+
+    void LineGeometry::SetStartPoint(glm::vec3 startPoint){
+        _vertices[0] = Vertex(startPoint);
+    }
+
+    void LineGeometry::SetEndPoint(glm::vec3 endPoint){
+        _vertices[1] = Vertex(endPoint);
+    }
+
+    void LineGeometry::Draw(){
+        if(!_hasInit) return;
+        glBindVertexArray(_VAO);
+        glDrawElements(GL_LINES, static_cast<unsigned int>(_indices.size()), GL_UNSIGNED_INT, 0);
+    }
+
+    json LineGeometry::ToJson(){
+        json j;
+        j["start_point"] = Math::ToJson(GetStartPoint());
+        j["end_point"] = Math::ToJson(GetEndPoint());
+        return j;
+    }
+
+    std::shared_ptr<LineGeometry> LineGeometry::FromJson(const json& data){
+        return std::make_shared<LineGeometry>(
+            Math::Vec3FromJson(data["start_point"]),
+            Math::Vec3FromJson(data["end_point"])
+        );
+    }
 }
