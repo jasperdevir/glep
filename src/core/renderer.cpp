@@ -46,6 +46,14 @@ namespace GLEP{
         _shadowMapBuffer = std::make_shared<Framebuffer>(glm::vec2(1024)); 
         _shadowMapCamera = std::make_shared<OrthographicCamera>(10.0f, 1.0f, 0.01f, 10.0f);
 
+        std::shared_ptr<Geometry> db_lightGeometry = std::make_shared<CubeGeometry>(0.25f, 0.25f, 0.25f);
+        std::shared_ptr<Material> db_lightMaterial = std::make_shared<UnlitMaterial>(Color(1.0f));
+        _db_lightMesh = std::make_shared<Mesh>(db_lightGeometry, db_lightMaterial);
+
+        std::shared_ptr<Geometry> db_normalDirGeometry = std::make_shared<LineGeometry>(glm::vec3(0.0f), glm::vec3(1.0f));
+        std::shared_ptr<Material> db_normalDirMaterial = std::make_shared<UnlitMaterial>(Color(1.0f));
+        _db_normalDirMesh = std::make_shared<Mesh>(db_normalDirGeometry, db_normalDirMaterial);
+
         Print(PrintCode::INFO, "RENDERER", "Renderer successfully initialized - OpenGL version " + std::to_string(GL_MAJ_VERSION) + std::to_string(GL_MIN_VERSION) + "0");
 
         initializeGui();
@@ -134,6 +142,41 @@ namespace GLEP{
                     continue;
                 
                 renderMesh(m->GeometryData, m->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, type);
+            }
+        }
+    }
+
+    void Renderer::renderDebugMode(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera){
+        glm::mat4 projectionMatrix = camera->GetProjectionMatrix();
+        glm::mat4 viewMatrix = camera->GetViewMatrix();
+        glm::vec3 cameraPos = camera->GetWorldPosition();
+
+        std::shared_ptr<LineGeometry> db_lineDirGeometry = std::dynamic_pointer_cast<LineGeometry>(_db_normalDirMesh->GeometryData);
+
+        for(std::shared_ptr<Light> l : scene->GetLights()){
+            switch(l->GetType()){
+                case LightType::POINT:{
+                    auto point = std::dynamic_pointer_cast<PointLight>(l);
+                    if(point){
+                        glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), point->Position);
+                        _db_lightMesh->MaterialData->SetUniformValue<Color>("uMaterial.diffuseColor", point->LightColor);
+                        renderMesh(_db_lightMesh->GeometryData, _db_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
+                    }  
+                    break;
+                }
+
+                case LightType::SPOT:{
+                    auto spot = std::dynamic_pointer_cast<SpotLight>(l);
+                    if(spot){
+                        glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), spot->Position);
+                        _db_lightMesh->MaterialData->SetUniformValue<Color>("uMaterial.diffuseColor", spot->LightColor);
+                        renderMesh(_db_lightMesh->GeometryData, _db_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
+                        db_lineDirGeometry->Regenerate(spot->Position, spot->Position + -spot->Direction);
+                        renderMesh(_db_normalDirMesh->GeometryData, _db_normalDirMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, glm::mat4(1.0f), RenderType::NORMAL);
+                    }
+                    break;  
+                }
+                                   
             }
         }
     }
@@ -305,6 +348,9 @@ namespace GLEP{
 
 
         renderSceneObjects(scene, TargetCamera);
+        if(DebugRenderMode)
+            renderDebugMode(scene, TargetCamera);
+
         if(passComposer)
             passComposer->PreSkybox();
         renderSkybox(scene, TargetCamera, depthTestSkybox);

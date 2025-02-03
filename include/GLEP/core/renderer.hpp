@@ -60,12 +60,16 @@ namespace GLEP {
             std::shared_ptr<Camera> _shadowMapCamera;
             glm::mat4 _lightSpaceMatrix = glm::mat4(1.0f);
 
+            std::shared_ptr<Mesh> _db_lightMesh;
+            std::shared_ptr<Mesh> _db_normalDirMesh;
+
             void initializeDefaults();
             void initializeGui();
 
             void renderSkybox(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera, bool depthTest = true);
             void renderShadowMap(std::shared_ptr<Scene> scene);
             void renderSceneObjects(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera, RenderType type = RenderType::NORMAL);
+            void renderDebugMode(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera);
             void renderMesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> mat, std::shared_ptr<Scene> scene, glm::vec3 cameraPos, glm::mat4 projection, glm::mat4 view, glm::mat4 model, RenderType type);
 
             void updateResolution(const std::shared_ptr<BufferPassComposer>& passComposer);
@@ -80,6 +84,8 @@ namespace GLEP {
 
             float ShadowMapDistance = 2.0f;
             bool RenderShadows = true;
+
+            bool DebugRenderMode = true;
 
             Renderer(std::shared_ptr<Window> window);
             Renderer(std::shared_ptr<Window> window, std::shared_ptr<Camera> camera);

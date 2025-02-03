@@ -652,6 +652,15 @@ namespace GLEP {
         _vertices[1] = Vertex(endPoint);
     }
 
+    void LineGeometry::Regenerate(glm::vec3 startPoint, glm::vec3 endPoint){
+        _vertices = {
+            Vertex(startPoint),
+            Vertex(endPoint)
+        };
+
+        bindVertices();
+    }
+
     void LineGeometry::Draw(){
         if(!_hasInit) return;
         glBindVertexArray(_VAO);

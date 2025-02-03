@@ -360,6 +360,11 @@ namespace GLEP{
             /// @param endPoint End point to set
             void SetEndPoint(glm::vec3 endPoint);
 
+            /// @brief Regnerate geometry.
+            /// @param startPoint Start point to set
+            /// @param endPoint End point to set
+            void Regenerate(glm::vec3 startPoint, glm::vec3 endPoint);
+
             /// @brief If data has been initialized, bind the vertex array, and draw a line from the start point to the end point.
             void Draw() override;
 

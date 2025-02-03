@@ -369,7 +369,7 @@ namespace GLEP {
     ){
         _name = "unlit_material";
         AddUniform<int>("uMaterial.type", 1, true);
-        AddUniform<Color>("uMaterial.colorDiffuse", diffuse);
+        AddUniform<Color>("uMaterial.diffuseColor", diffuse);
     }
 
     UnlitMaterial::UnlitMaterial(std::shared_ptr<Texture> diffuse) :
@@ -379,17 +379,17 @@ namespace GLEP {
     ){
         _name = "unlit_material";
         AddUniform<int>("uMaterial.type", 2, true);
-        AddUniform<std::shared_ptr<Texture>>("uMaterial.texDiffuse", diffuse);
+        AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuse);
     }
 
     std::shared_ptr<UnlitMaterial> UnlitMaterial::FromJson(const json& data){
         if(data["uMaterial.type"] == 1){
             return std::make_shared<UnlitMaterial>(
-                Color::FromJson(data["uMaterial.colorDiffuse"])
+                Color::FromJson(data["uMaterial.diffuseColor"])
             );
         } else if (data["uMaterial.type"] == 2){
             return std::make_shared<UnlitMaterial>(
-                Texture::FromJson(data["uMaterial.texDiffuse"])
+                Texture::FromJson(data["uMaterial.diffuseTex"])
             );
         } else {
             Print(PrintCode::ERROR, "MATERIAL", "Unknown unlit_material type: " + data["type"]);

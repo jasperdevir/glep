@@ -16,9 +16,9 @@ struct GLEPInfo {
 struct Material{
     int type;
     
-    vec4 colorDiffuse;
+    vec4 diffuseColor;
 
-    sampler2D texDiffuse;
+    sampler2D diffuseTex;
 };
 
 in Vertex v;
@@ -31,9 +31,9 @@ void main(){
     vec4 finalColor = vec4(1.0f);
 
     if(uMaterial.type == 1){
-        finalColor = uMaterial.colorDiffuse;
+        finalColor = uMaterial.diffuseColor;
     } else if (uMaterial.type == 2){
-        finalColor = texture(uMaterial.texDiffuse, v.uv);
+        finalColor = texture(uMaterial.diffuseTex, v.uv);
     }
 
     if(finalColor.a < 0.1f) discard;
