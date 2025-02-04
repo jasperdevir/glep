@@ -48,11 +48,11 @@ namespace GLEP{
 
         std::shared_ptr<Geometry> db_lightGeometry = std::make_shared<CubeGeometry>(0.25f, 0.25f, 0.25f);
         std::shared_ptr<Material> db_lightMaterial = std::make_shared<UnlitMaterial>(Color(1.0f));
-        _db_lightMesh = std::make_shared<Mesh>(db_lightGeometry, db_lightMaterial);
+        _DB_lightMesh = std::make_shared<Mesh>(db_lightGeometry, db_lightMaterial);
 
         std::shared_ptr<Geometry> db_normalDirGeometry = std::make_shared<LineGeometry>(glm::vec3(0.0f), glm::vec3(1.0f));
         std::shared_ptr<Material> db_normalDirMaterial = std::make_shared<UnlitMaterial>(Color(1.0f));
-        _db_normalDirMesh = std::make_shared<Mesh>(db_normalDirGeometry, db_normalDirMaterial);
+        _DB_normalDirMesh = std::make_shared<Mesh>(db_normalDirGeometry, db_normalDirMaterial);
 
         Print(PrintCode::INFO, "RENDERER", "Renderer successfully initialized - OpenGL version " + std::to_string(GL_MAJ_VERSION) + std::to_string(GL_MIN_VERSION) + "0");
 
@@ -151,7 +151,7 @@ namespace GLEP{
         glm::mat4 viewMatrix = camera->GetViewMatrix();
         glm::vec3 cameraPos = camera->GetWorldPosition();
 
-        std::shared_ptr<LineGeometry> db_lineDirGeometry = std::dynamic_pointer_cast<LineGeometry>(_db_normalDirMesh->GeometryData);
+        std::shared_ptr<LineGeometry> db_lineDirGeometry = std::dynamic_pointer_cast<LineGeometry>(_DB_normalDirMesh->GeometryData);
 
         for(std::shared_ptr<Light> l : scene->GetLights()){
             switch(l->GetType()){
@@ -159,8 +159,10 @@ namespace GLEP{
                     auto point = std::dynamic_pointer_cast<PointLight>(l);
                     if(point){
                         glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), point->Position);
-                        _db_lightMesh->MaterialData->SetUniformValue<Color>("uMaterial.diffuseColor", point->LightColor);
-                        renderMesh(_db_lightMesh->GeometryData, _db_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
+                        if(DB_DrawLightPositions){
+                            _DB_lightMesh->MaterialData->SetUniformValue<Color>("uMaterial.diffuseColor", point->LightColor);
+                            renderMesh(_DB_lightMesh->GeometryData, _DB_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
+                        }
                     }  
                     break;
                 }
@@ -169,16 +171,42 @@ namespace GLEP{
                     auto spot = std::dynamic_pointer_cast<SpotLight>(l);
                     if(spot){
                         glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), spot->Position);
-                        _db_lightMesh->MaterialData->SetUniformValue<Color>("uMaterial.diffuseColor", spot->LightColor);
-                        renderMesh(_db_lightMesh->GeometryData, _db_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
-                        db_lineDirGeometry->Regenerate(spot->Position, spot->Position + -spot->Direction);
-                        renderMesh(_db_normalDirMesh->GeometryData, _db_normalDirMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, glm::mat4(1.0f), RenderType::NORMAL);
+                        if(DB_DrawLightPositions){
+                            _DB_lightMesh->MaterialData->SetUniformValue<Color>("uMaterial.diffuseColor", spot->LightColor);
+                            renderMesh(_DB_lightMesh->GeometryData, _DB_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
+                        }
+
+                        if(DB_DrawLightDirections){
+                            glm::vec3 direction = glm::normalize(spot->Direction);
+                            db_lineDirGeometry->Regenerate(spot->Position, spot->Position + direction * DB_LightDirectionDistance);
+                            renderMesh(_DB_normalDirMesh->GeometryData, _DB_normalDirMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, glm::mat4(1.0f), RenderType::NORMAL);
+                        }
                     }
                     break;  
                 }
                                    
             }
         }
+
+        if(DB_DrawVertexNormals){
+            for(std::shared_ptr<SceneObject> object : scene->GetObjects()){
+                auto model = std::dynamic_pointer_cast<Model>(object);
+                if(!model)
+                    continue;
+
+                for(std::shared_ptr<Mesh> mesh : model->GetMeshes()){
+                    if(!mesh->MaterialData->DebugMode && !DB_OverrideMaterialDebugMode)
+                        continue;
+
+                    for(Vertex vertex : mesh->GeometryData->GetVertices()){
+                        glm::vec3 normal = glm::normalize(vertex.Normal);
+                        db_lineDirGeometry->Regenerate(vertex.Position, vertex.Position + -normal * DB_VertexNormalDistance);
+                        renderMesh(_DB_normalDirMesh->GeometryData, _DB_normalDirMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, model->GetModelMatrix(), RenderType::NORMAL);
+                    }
+                }
+            }
+        }
+        
     }
 
     void Renderer::renderMesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> mat, std::shared_ptr<Scene> scene, glm::vec3 cameraPos, glm::mat4 projection, glm::mat4 view, glm::mat4 model, RenderType type){

@@ -60,8 +60,8 @@ namespace GLEP {
             std::shared_ptr<Camera> _shadowMapCamera;
             glm::mat4 _lightSpaceMatrix = glm::mat4(1.0f);
 
-            std::shared_ptr<Mesh> _db_lightMesh;
-            std::shared_ptr<Mesh> _db_normalDirMesh;
+            std::shared_ptr<Mesh> _DB_lightMesh;
+            std::shared_ptr<Mesh> _DB_normalDirMesh;
 
             void initializeDefaults();
             void initializeGui();
@@ -86,6 +86,12 @@ namespace GLEP {
             bool RenderShadows = true;
 
             bool DebugRenderMode = true;
+            bool DB_OverrideMaterialDebugMode = false;
+            bool DB_DrawLightPositions = true;
+            bool DB_DrawLightDirections = true;
+            float DB_LightDirectionDistance = 2.0f;
+            bool DB_DrawVertexNormals = false;
+            float DB_VertexNormalDistance = 1.0f;
 
             Renderer(std::shared_ptr<Window> window);
             Renderer(std::shared_ptr<Window> window, std::shared_ptr<Camera> camera);

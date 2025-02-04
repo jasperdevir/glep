@@ -84,6 +84,7 @@ namespace GLEP{
             bool CastShadows = false;
             bool BakeRequired = false;
             bool Wireframe = false;
+            bool DebugMode = false;
             MaterialCull CullFace = MaterialCull::BACK;
 
             Material();
