@@ -41,6 +41,7 @@ namespace GLEP{
         glm::vec3 Position;
         glm::vec3 Normal;
         glm::vec2 TexCoord;
+        glm::vec3 Tangent;
 
         Vertex(){};
 
@@ -48,10 +49,15 @@ namespace GLEP{
             Position = position;
         }
 
-        Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 texCoord){
+        Vertex(glm::vec3 position){
+            Position = position;
+        }
+
+        Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 texCoord, glm::vec3 tangent){
             Position = position;
             Normal = normal;
             TexCoord = texCoord;
+            Tangent = tangent;
         };
 
         /// @brief Serialize data to JSON format.
@@ -61,6 +67,7 @@ namespace GLEP{
             j["position"] = Math::ToJson(Position);
             j["normal"] = Math::ToJson(Normal);
             j["tex_coord"] = Math::ToJson(TexCoord);
+            j["tangent"] = Math::ToJson(Tangent);
             return j;
         }
 
@@ -71,7 +78,8 @@ namespace GLEP{
             return Vertex(
                 Math::Vec3FromJson(data["position"]),
                 Math::Vec3FromJson(data["normal"]),
-                Math::Vec2FromJson(data["tex_coord"])
+                Math::Vec2FromJson(data["tex_coord"]),
+                Math::Vec3FromJson(data["tangent"])
             );
         }
     };
@@ -137,7 +145,6 @@ namespace GLEP{
 
             /// @brief Calculate normals for each vertex based on their position.
             void CalculateNormals();
-
 
             /// @brief Serialize data to JSON format.
             /// @return Serialized data

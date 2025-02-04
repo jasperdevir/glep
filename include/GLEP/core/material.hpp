@@ -48,18 +48,10 @@ namespace GLEP{
     };
 
     class TypelessShaderUniform {
-        protected:
-            bool _isPrivate;
-
         public:
             std::string Name;
 
-            TypelessShaderUniform(std::string name, bool isPrivate = false);
-
-            /// @brief Get if the uniform has been set to private (Non-Serializable).
-            /// @return If the uniform has been set to private
-            bool GetIsPrivate();
-
+            TypelessShaderUniform(std::string name);
 
             /// @brief Bind the uniform to a material's shader.
             /// @param material Target material
@@ -111,10 +103,18 @@ namespace GLEP{
             /// @tparam T Uniform type
             /// @param name Uniform name
             /// @param value Uniform value
-            /// @param isPrivate If the uniform is private (Non-Serializable)
             template <typename T>
-            void AddUniform(const std::string& name, T value, bool isPrivate = false) {
-                std::shared_ptr<ShaderUniform<T>> uniform = std::make_shared<ShaderUniform<T>>(name, value, isPrivate);
+            void AddUniform(const std::string& name, T value) {
+                if(name == "normalTex" && GetUniform<bool>("hasNormalMap") == nullptr){
+                    AddUniform<bool>("hasNormalMap", true);
+                } else if (name == "depthTex" && GetUniform<bool>("hasDepthTex") == nullptr){
+                    AddUniform<bool>("hasDepthTex", true);
+                    AddUniform<float>("depthScale", 1.0f);
+                }
+
+
+                std::string uniformName = "uMaterial." + name;
+                std::shared_ptr<ShaderUniform<T>> uniform = std::make_shared<ShaderUniform<T>>(uniformName, value);
                 uniform->SetUniform(this);
 
                 _uniforms.push_back(uniform);
@@ -127,9 +127,10 @@ namespace GLEP{
             /// @return First uniform that matches the specified name, will return nullptr if not found.
             template <typename T>
             std::shared_ptr<ShaderUniform<T>> GetUniform(const std::string& name){
+                std::string uniformName = "uMaterial." + name;
                 for(auto& u : _uniforms){
                     auto uniform = std::dynamic_pointer_cast<ShaderUniform<T>>(u);
-                    if(uniform && uniform->Name == name){
+                    if(uniform && uniform->Name == uniformName){
                         return uniform;
                     }
                 }
@@ -137,6 +138,20 @@ namespace GLEP{
                 return nullptr;
             }
 
+
+            /// @brief Get the value of a specified uniform.
+            /// @tparam T Uniform type
+            /// @param name Uniform name
+            /// @param nullValue Value to return if uniform is not found
+            /// @return Uniform value
+            template <typename T>
+            T GetUniformValue(const std::string& name, T nullValue){
+                std::shared_ptr<ShaderUniform<T>> uniform = GetUniform<T>(name);
+
+                if(!uniform) return nullValue;
+                
+                return uniform->Value;
+            }
 
             /// @brief Set the value of a specified uniform.
             /// @tparam T Uniform type
@@ -256,8 +271,8 @@ namespace GLEP{
         public:
             T Value;
 
-            ShaderUniform<T>(std::string name, T value, bool isPrivate = false)
-            : TypelessShaderUniform(name, isPrivate) {
+            ShaderUniform<T>(std::string name, T value)
+            : TypelessShaderUniform(name) {
                 Value = value;
             }
 
@@ -273,8 +288,6 @@ namespace GLEP{
             /// @return Serialized data
             json ToJson() override {
                 json j;
-                if(_isPrivate) 
-                    return j;
 
                 j["name"] = Name;
                 j["value"] = json();

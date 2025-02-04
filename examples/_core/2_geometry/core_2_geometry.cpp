@@ -52,13 +52,13 @@ int main(){
     // Pyramid Buffer Geometry
     std::vector<Vertex> vertices = {
         // Bottom Face Vertices
-        {glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(0.0f)}, // Vertex 0
-        {glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(0.0f)}, // Vertex 1
-        {glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.0f), glm::vec2(0.0f)}, // Vertex 2
-        {glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f), glm::vec2(0.0f)}, // Vertex 3
+        {glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(0.0f), glm::vec3(0.0f)}, // Vertex 0
+        {glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(0.0f), glm::vec3(0.0f)}, // Vertex 1
+        {glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.0f), glm::vec2(0.0f), glm::vec3(0.0f)}, // Vertex 2
+        {glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f), glm::vec2(0.0f), glm::vec3(0.0f)}, // Vertex 3
 
         // Apex Vertex
-        {glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec2(0.0f)} // Vertex 4
+        {glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec2(0.0f), glm::vec3(0.0f)} // Vertex 4
     };
 
     std::vector<unsigned int> indices = {
