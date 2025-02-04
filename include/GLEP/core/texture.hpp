@@ -39,7 +39,7 @@ namespace GLEP{
         DIFFUSE,
         SPECULAR,
         NORMAL,
-        HEIGHT
+        DISP
     };
 
     enum class TextureWrap{
@@ -143,13 +143,13 @@ namespace GLEP{
         std::shared_ptr<Texture> Diffuse;
         std::shared_ptr<Texture> Specular;
         std::shared_ptr<Texture> Normal;
-        std::shared_ptr<Texture> Height;
+        std::shared_ptr<Texture> Disp;
 
-        TextureMap(std::shared_ptr<Texture> diffuse, std::shared_ptr<Texture> specular, std::shared_ptr<Texture> normal, std::shared_ptr<Texture> height){
+        TextureMap(std::shared_ptr<Texture> diffuse, std::shared_ptr<Texture> specular, std::shared_ptr<Texture> normal, std::shared_ptr<Texture> disp){
             Diffuse = diffuse;
             Specular = specular;
             Normal = normal;
-            Height = height;
+            Disp = disp;
         }
 
         /// @brief Bind all textures as active texture based on their type.
@@ -157,7 +157,7 @@ namespace GLEP{
             Diffuse->Bind();
             Specular->Bind();
             Normal->Bind();
-            Height->Bind();
+            Disp->Bind();
         }
     };
     

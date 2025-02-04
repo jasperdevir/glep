@@ -52,7 +52,7 @@ int main(){
         File::DIRECTORY / "examples" / "res" / "shaders" / "3_materials_color.fs" // Fragment Shader Path
     );
     customMaterial->AddUniform<Color>(
-        "uMaterial.color", // Uniform name within the shader
+        "color", // Uniform name within the shader
         Color::WHITE // Value to set
     );
 
@@ -89,8 +89,8 @@ int main(){
         File::GLEP_SHADERS_PATH / "default.vs",                                     // Vertex Shader Path
         File::DIRECTORY / "examples" / "res" / "shaders" / "3_materials_texture.fs" // Fragment Shader Path
     );
-    customTextureMaterial->AddUniform<std::shared_ptr<Texture>>("uMaterial.texture", defaultTexture);
-    customTextureMaterial->AddUniform<Color>("uMaterial.tint", Color::WHITE);
+    customTextureMaterial->AddUniform<std::shared_ptr<Texture>>("texture", defaultTexture);
+    customTextureMaterial->AddUniform<Color>("tint", Color::WHITE);
 
     std::shared_ptr<Material> defaultTextureMaterial = std::make_shared<UnlitMaterial>(
         defaultTexture // Diffuse Texture

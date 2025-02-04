@@ -26,7 +26,7 @@ namespace GLEP {
 
     void BufferPass::InitializeBuffer(glm::vec2 resolution){
         _framebuffer = std::make_shared<Framebuffer>(resolution);
-        _mesh->MaterialData->AddUniform<std::shared_ptr<Framebuffer>>("uFramebuffer", _framebuffer);
+        _mesh->MaterialData->AddUniform<std::shared_ptr<Framebuffer>>("framebuffer", _framebuffer);
     }
 
     std::shared_ptr<Framebuffer> BufferPass::GetFramebuffer(){ return _framebuffer; }
@@ -114,10 +114,10 @@ namespace GLEP {
         _name = "kernel_pass";
 
         for(int i = 0; i < 9; i++){
-            GetMaterial()->AddUniform<float>("uMaterial.kernel[" + std::to_string(i) + "]", kernel[i]);
+            GetMaterial()->AddUniform<float>("kernel[" + std::to_string(i) + "]", kernel[i]);
         }
         
-        GetMaterial()->AddUniform<float>("uMaterial.offset", offset);
+        GetMaterial()->AddUniform<float>("offset", offset);
     }
 
     std::shared_ptr<KernelPass> KernelPass::FromJson(const json& data){
@@ -155,14 +155,14 @@ namespace GLEP {
         )
     ){
         _name = "grain_pass";
-        GetMaterial()->AddUniform<glm::vec2>("uMaterial.uvScale", uvScale);
-        GetMaterial()->AddUniform<float>("uMaterial.intensity", intensity);
+        GetMaterial()->AddUniform<glm::vec2>("uvScale", uvScale);
+        GetMaterial()->AddUniform<float>("intensity", intensity);
     }
 
     std::shared_ptr<GrainPass> GrainPass::FromJson(const json& data){
         return std::make_shared<GrainPass>(
             Math::Vec2FromJson(data["uniforms"]["uMaterial.uvScale"]),
-            data["uniforms"]["uMateria.intensity"]
+            data["uniforms"]["uMaterial.intensity"]
         );
     }
 
@@ -175,9 +175,9 @@ namespace GLEP {
     ){
         _name = "fog_pass";
 
-        GetMaterial()->AddUniform<float>("uMaterial.nearPlane", near);
-        GetMaterial()->AddUniform<float>("uMaterial.farPlane", far);
-        GetMaterial()->AddUniform<Color>("uMaterial.fogColor", fogColor);
+        GetMaterial()->AddUniform<float>("nearPlane", near);
+        GetMaterial()->AddUniform<float>("farPlane", far);
+        GetMaterial()->AddUniform<Color>("fogColor", fogColor);
     }
 
     std::shared_ptr<FogPass> FogPass::FromJson(const json& data){

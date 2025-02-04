@@ -123,9 +123,9 @@ namespace GLEP{
         std::shared_ptr<Texture> diffuseMap = loadMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, TextureType::DIFFUSE);
         std::shared_ptr<Texture> specularMap = loadMaterialTexture(aiMaterial, aiTextureType_SPECULAR, TextureType::SPECULAR);
         std::shared_ptr<Texture> normalMap = loadMaterialTexture(aiMaterial, aiTextureType_NORMALS, TextureType::NORMAL);
-        std::shared_ptr<Texture> heightMap = loadMaterialTexture(aiMaterial, aiTextureType_HEIGHT, TextureType::HEIGHT);
+        std::shared_ptr<Texture> dispMap = loadMaterialTexture(aiMaterial, aiTextureType_DISPLACEMENT, TextureType::DISP);
 
-        return std::make_shared<TextureMap>(diffuseMap, specularMap, normalMap, heightMap);
+        return std::make_shared<TextureMap>(diffuseMap, specularMap, normalMap, dispMap);
     }
 
     std::shared_ptr<Texture> ImportModelTexture::loadMaterialTexture(aiMaterial *mat, aiTextureType aiType, TextureType type){
@@ -196,53 +196,41 @@ namespace GLEP{
             std::shared_ptr<Texture> diffuseTex = textureMaps[i]->Diffuse;
             std::shared_ptr<Texture> specularTex = textureMaps[i]->Specular;
             std::shared_ptr<Texture> normalTex = textureMaps[i]->Normal;
-            std::shared_ptr<Texture> heightTex = textureMaps[i]->Height;
+            std::shared_ptr<Texture> dispTex = textureMaps[i]->Disp;
 
             std::shared_ptr<Material> meshMat = _meshes[i]->MaterialData;
 
             if(diffuseTex != nullptr){
                 if(specularTex != nullptr){
-                    meshMat->AddUniform<float>("uMaterial.type", 3);
+                    meshMat->SetUniformValue<float>("type", 3, true);
                 } else {
-                    meshMat->AddUniform<float>("uMaterial.type", 2);
-                    if(meshMat->SetUniformValue<Color>("uMaterial.specularColor", Color::WHITE) == nullptr){
-                        meshMat->AddUniform<Color>("uMaterial.specularColor", Color::WHITE);
-                    }
-                    //Print(PrintCode::INFO, "IMPORT_GEOMETRY_MODEL", "Specular texture is null. Applying Color::WHITE.");
+                    meshMat->SetUniformValue<float>("type", 2, true);
+                    meshMat->SetUniformValue<Color>("specularColor", Color::WHITE, true);
+                    Print(PrintCode::INFO, "IMPORT_GEOMETRY_MODEL", "Specular texture is null. Applying Color::WHITE.");
                 }
             } else {
-                meshMat->AddUniform<float>("uMaterial.type", 1);
-                if(meshMat->SetUniformValue<Color>("uMaterial.diffuseColor", Color::CLEAR) == nullptr){
-                    meshMat->AddUniform<Color>("uMaterial.diffuseColor", Color::CLEAR);
-                }
-                if(meshMat->SetUniformValue<Color>("uMaterial.specularColor", Color::CLEAR) == nullptr){
-                    meshMat->AddUniform<Color>("uMaterial.specularColor", Color::CLEAR);
-                }
+                meshMat->SetUniformValue<float>("type", 1, true);
+                meshMat->SetUniformValue<Color>("diffuseColor", Color::CLEAR, true);
+                meshMat->SetUniformValue<Color>("specularColor", Color::CLEAR, true);
                 Print(PrintCode::ERROR, "IMPORT_GEOMETRY_MODEL", "Diffuse texture is null. Applying Color::CLEAR to diffuse and specular.");
                 continue;
             }
 
-            if(diffuseTex != nullptr && meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuseTex) == nullptr){
-                meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.diffuseTex", diffuseTex);
-            }
+            if(diffuseTex)
+                meshMat->SetUniformValue<std::shared_ptr<Texture>>("diffuseTex", diffuseTex, true);
+            
 
-            if(specularTex != nullptr && meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.specularTex", specularTex) == nullptr){
-                meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.specularTex", specularTex);
-            }
+            if(specularTex)
+                meshMat->SetUniformValue<std::shared_ptr<Texture>>("specularTex", specularTex, true);
+            
 
-            if(normalTex != nullptr){
-                if(meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex) == nullptr)
-                    meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", normalTex);
-                meshMat->SetUniform("uMaterial.hasNormalMap", true);
-                Print(PrintCode::INFO, "IMPORT_GEOMETRY_MODEL", "Normal map has been assigned.");
-            }
+            if(normalTex)
+                meshMat->SetUniformValue<std::shared_ptr<Texture>>("normalTex", normalTex, true);
+            
 
-            if(heightTex != nullptr){
-                if(meshMat->SetUniformValue<std::shared_ptr<Texture>>("uMaterial.normalTex", heightTex) == nullptr)
-                    meshMat->AddUniform<std::shared_ptr<Texture>>("uMaterial.normalTex", heightTex);
-                meshMat->SetUniform("uMaterial.hasNormalMap", true);
-                Print(PrintCode::INFO, "IMPORT_GEOMETRY_MODEL", "Normal map has been assigned.");
-            }
+            if(dispTex)
+                meshMat->SetUniformValue<std::shared_ptr<Texture>>("dispTex", dispTex, true);
+            
         }
     }
     
@@ -361,7 +349,7 @@ namespace GLEP{
         std::shared_ptr<Texture> diffuseMap = loadMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, TextureType::DIFFUSE);
         std::shared_ptr<Texture> specularMap = loadMaterialTexture(aiMaterial, aiTextureType_SPECULAR, TextureType::SPECULAR);
         std::shared_ptr<Texture> normalMap = loadMaterialTexture(aiMaterial, aiTextureType_NORMALS, TextureType::NORMAL);
-        std::shared_ptr<Texture> heightMap = loadMaterialTexture(aiMaterial, aiTextureType_HEIGHT, TextureType::HEIGHT);
+        std::shared_ptr<Texture> dispMap = loadMaterialTexture(aiMaterial, aiTextureType_DISPLACEMENT, TextureType::DISP);
 
         std::shared_ptr<Geometry> geometry = std::make_shared<Geometry>(vertices, indices);
 
@@ -378,6 +366,14 @@ namespace GLEP{
             } else {
                 material = std::make_shared<UnlitMaterial>(Color(1.0f));
             }
+        }
+
+        if(normalMap){
+            material->AddUniform<std::shared_ptr<Texture>>("normalTex", normalMap);
+        }
+
+        if(dispMap){
+            material->AddUniform<std::shared_ptr<Texture>>("dispTex", dispMap);
         }
     
         return std::make_shared<Mesh>(geometry, material);

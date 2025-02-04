@@ -160,7 +160,7 @@ namespace GLEP{
                     if(point){
                         glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), point->Position);
                         if(DB_DrawLightPositions){
-                            _DB_lightMesh->MaterialData->SetUniformValue<Color>("uMaterial.diffuseColor", point->LightColor);
+                            _DB_lightMesh->MaterialData->SetUniformValue<Color>("diffuseColor", point->LightColor);
                             renderMesh(_DB_lightMesh->GeometryData, _DB_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
                         }
                     }  
@@ -172,7 +172,7 @@ namespace GLEP{
                     if(spot){
                         glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), spot->Position);
                         if(DB_DrawLightPositions){
-                            _DB_lightMesh->MaterialData->SetUniformValue<Color>("uMaterial.diffuseColor", spot->LightColor);
+                            _DB_lightMesh->MaterialData->SetUniformValue<Color>("diffuseColor", spot->LightColor);
                             renderMesh(_DB_lightMesh->GeometryData, _DB_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
                         }
 
@@ -200,7 +200,7 @@ namespace GLEP{
 
                     for(Vertex vertex : mesh->GeometryData->GetVertices()){
                         glm::vec3 normal = glm::normalize(vertex.Normal);
-                        db_lineDirGeometry->Regenerate(vertex.Position, vertex.Position + -normal * DB_VertexNormalDistance);
+                        db_lineDirGeometry->Regenerate(vertex.Position, vertex.Position + normal * DB_VertexNormalDistance);
                         renderMesh(_DB_normalDirMesh->GeometryData, _DB_normalDirMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, model->GetModelMatrix(), RenderType::NORMAL);
                     }
                 }

@@ -17,14 +17,18 @@ struct Framebuffer{
     sampler2D depth;
 };
 
+struct Material{
+    Framebuffer framebuffer;
+};
+
 in Vertex v;
 in GLEPInfo i;
 
-uniform Framebuffer uFramebuffer;
+uniform Material uMaterial;
 
 void main()
 {
-    vec3 color = texture(uFramebuffer.color, v.uv).rgb;
+    vec3 color = texture(uMaterial.framebuffer.color, v.uv).rgb;
     color.r *= (sin(i.time * 0.5f) + 1.0f) * 0.5f;
     color.g *= (sin(i.time * 1.0f) + 1.0f) * 0.5f;
     color.b *= (sin(i.time* 1.5f) + 1.0f) * 0.5f;

@@ -17,9 +17,9 @@ struct Framebuffer{
 struct Material{
     vec2 uvScale;
     float intensity;
-};
 
-uniform Framebuffer uFramebuffer;
+    Framebuffer framebuffer;
+};
 
 uniform Material uMaterial;
 
@@ -58,7 +58,7 @@ float fbm (vec2 st, int octaves, float amplitude, float lacunarity) {
 void main(){
     float noise = (fbm(v.uv * uMaterial.uvScale, 8, 1.0f, 3.0f) + 1.0f) * 0.5f;
     noise *= uMaterial.intensity;
-    vec3 col = texture(uFramebuffer.color, v.uv).rgb * noise;
+    vec3 col = texture(uMaterial.framebuffer.color, v.uv).rgb * noise;
 
     FragColor = vec4(col, 1.0f);
 }

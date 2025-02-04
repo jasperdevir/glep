@@ -383,7 +383,7 @@ namespace GLEP {
             vertex.Position.z -= _depth;
             vertex.Normal = glm::vec3(0.0f, 0.0f, -1.0f);
             vertex.Tangent = glm::vec3(1.0f, 0.0f, 0.0f);
-            vertex.TexCoord = glm::vec2(vertex.Position.x / _width + 0.5f, vertex.Position.y / _height + 0.5f);
+            vertex.TexCoord = glm::vec2(vertex.Position.x / _width + 0.5f, 1.0f - (vertex.Position.y / _height + 0.5f));
             _vertices.push_back(vertex);
         }
         
@@ -413,9 +413,9 @@ namespace GLEP {
             vertex.Position.x = vertex.Position.z + 0.5f * _width; 
             vertex.Position.x -= _width; 
             vertex.Position.z = x;
-            vertex.Normal = glm::vec3(-1.0f, 0.0f, 0.0f);
+            vertex.Normal = glm::vec3(1.0f, 0.0f, 0.0f);
             vertex.Tangent = glm::vec3(0.0f, 0.0f, 1.0f);
-            vertex.TexCoord = glm::vec2(vertex.Position.z / _depth + 0.5f, vertex.Position.y / _height + 0.5f);
+            vertex.TexCoord = glm::vec2(vertex.Position.z / _depth + 0.5f, 1.0f - (vertex.Position.y / _height + 0.5f));
             _vertices.push_back(vertex);
         }
         
@@ -449,7 +449,7 @@ namespace GLEP {
             vertex.Position.z -= _depth;
             vertex.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
             vertex.Tangent = glm::vec3(1.0f, 0.0f, 0.0f);
-            vertex.TexCoord = glm::vec2(vertex.Position.x / _width + 0.5f, vertex.Position.z / _depth + 0.5f);
+            vertex.TexCoord = glm::vec2(vertex.Position.x / _width + 0.5f, 1.0f - (vertex.Position.z / _depth + 0.5f));
             _vertices.push_back(vertex);
         }
 

@@ -114,6 +114,11 @@ int main(){
         bunnyGeometry,
         phongMaterial
     );
+    for(auto& m : bunny0->GetMeshes()){
+        for(auto& u : m->MaterialData->GetUniforms()){
+            Print(PrintCode::INFO, u->Name);
+        }
+    }
     bunny1->Scale = glm::vec3(6.0f);
     bunny1->Position = glm::vec3(1.0f, -1.0f, 1.0f);
     scene->Add(bunny1);
@@ -131,7 +136,7 @@ int main(){
 
     std::shared_ptr<SpotLight> spotlight = std::make_shared<SpotLight>(
         glm::vec3(0.0f, 1.0f, 2.0f),
-        glm::vec3(0.0f, 0.5f, 1.0f),
+        glm::vec3(0.0f, -0.5f, -1.0f),
         Color::RED,
         2.0f,
         15.0f,

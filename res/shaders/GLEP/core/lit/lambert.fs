@@ -53,16 +53,16 @@ struct SpotLight {
 
 struct Material {
     int type;
-    bool hasNormalMap;
-    bool hasDepthTex;
+    bool hasNormalTex;
+    bool hasDispTex;
 
     vec4 diffuseColor;
 
     sampler2D diffuseTex;
 
     sampler2D normalTex;
-    sampler2D depthTex;
-    float depthScale;
+    sampler2D dispTex;
+    float dispScale;
 };
 
 struct Framebuffer {
@@ -97,7 +97,7 @@ vec3 diffuseLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, vec3
 
 vec3 calcPointLight(PointLight light, vec3 normal, vec3 diffuseMat){
     vec3 lightDir = vec3(0.0f);
-    if(uMaterial.hasNormalMap){
+    if(uMaterial.hasNormalTex){
         vec3 lightPos = v.tbn * light.position;
         lightDir = normalize(lightPos - v.tangentPosition);
     }else {
@@ -116,7 +116,7 @@ vec3 calcPointLight(PointLight light, vec3 normal, vec3 diffuseMat){
 
 vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 diffuseMat){
     vec3 lightDir = vec3(0.0f);
-    if(uMaterial.hasNormalMap){
+    if(uMaterial.hasNormalTex){
         lightDir = normalize(v.tbn * -light.direction);
     }else {
         lightDir = normalize(-light.direction);
@@ -129,7 +129,7 @@ vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 diffuseMat){
 
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 diffuseMat){
     vec3 lightDir = vec3(0.0f);
-    if(uMaterial.hasNormalMap){
+    if(uMaterial.hasNormalTex){
         vec3 lightPos = v.tbn * light.position;
         lightDir = normalize(lightPos - v.tangentPosition);
     }else {
@@ -159,7 +159,7 @@ float calcDirectionalShadow(vec4 positionLightSpace, vec3 normal){
     float currentDepth = projCoords.z;
 
     vec3 lightDir = vec3(0.0f);
-    if(uMaterial.hasNormalMap){
+    if(uMaterial.hasNormalTex){
         vec3 lightPos = v.tbn * uDirectionalLight.position;
         lightDir = normalize(lightPos - v.tangentPosition);
     } else {
@@ -191,23 +191,23 @@ vec2 parallaxMapping(vec2 texCoords, vec3 viewDir){
     const float numLayers = 10;
     float layerDepth = 1.0 / numLayers;
     float currentLayerDepth = 0.0;
-    vec2 P = viewDir.xy * uMaterial.depthScale; 
+    vec2 P = viewDir.xy * uMaterial.dispScale; 
     vec2 deltaTexCoords = P / numLayers;
 
     vec2  currentTexCoords = texCoords;
-    float currentDepthMapValue = texture(uMaterial.depthTex, currentTexCoords).r;
+    float currentDepthMapValue = texture(uMaterial.dispTex, currentTexCoords).r;
     
     while(currentLayerDepth < currentDepthMapValue)
     {
         currentTexCoords -= deltaTexCoords;
-        currentDepthMapValue = texture(uMaterial.depthTex, currentTexCoords).r;  
+        currentDepthMapValue = texture(uMaterial.dispTex, currentTexCoords).r;  
         currentLayerDepth += layerDepth;  
     }
 
     vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
 
     float afterDepth  = currentDepthMapValue - currentLayerDepth;
-    float beforeDepth = texture(uMaterial.depthTex, prevTexCoords).r - currentLayerDepth + layerDepth;
+    float beforeDepth = texture(uMaterial.dispTex, prevTexCoords).r - currentLayerDepth + layerDepth;
     
     float weight = afterDepth / (afterDepth - beforeDepth);
     vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
@@ -221,7 +221,7 @@ void main(){
     vec4 diffuseMat = vec4(1.0f);
 
     vec2 texCoords = v.uv;
-    if(uMaterial.hasDepthTex){
+    if(uMaterial.hasDispTex){
         vec3 viewDir = normalize(i.tangentViewPos - v.tangentPosition);
         texCoords = parallaxMapping(v.uv, viewDir);
         if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
@@ -229,7 +229,7 @@ void main(){
     }
 
     vec3 normal = v.tbn[2];
-    if(uMaterial.hasNormalMap){
+    if(uMaterial.hasNormalTex){
         normal = texture(uMaterial.normalTex, texCoords).rgb;
         normal = normalize(normal * 2.0 - 1.0);
     }

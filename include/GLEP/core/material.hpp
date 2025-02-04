@@ -103,13 +103,14 @@ namespace GLEP{
             /// @tparam T Uniform type
             /// @param name Uniform name
             /// @param value Uniform value
+            /// @return Created uniform
             template <typename T>
-            void AddUniform(const std::string& name, T value) {
-                if(name == "normalTex" && GetUniform<bool>("hasNormalMap") == nullptr){
-                    AddUniform<bool>("hasNormalMap", true);
-                } else if (name == "depthTex" && GetUniform<bool>("hasDepthTex") == nullptr){
-                    AddUniform<bool>("hasDepthTex", true);
-                    AddUniform<float>("depthScale", 1.0f);
+            std::shared_ptr<ShaderUniform<T>> AddUniform(const std::string& name, T value) {
+                if(name == "normalTex" && GetUniform<bool>("hasNormalTex") == nullptr){
+                    AddUniform<bool>("hasNormalTex", true);
+                } else if (name == "dispTex" && GetUniform<bool>("hasDispTex") == nullptr){
+                    AddUniform<bool>("hasDispTex", true);
+                    AddUniform<float>("dispScale", 0.1f);
                 }
 
 
@@ -118,6 +119,8 @@ namespace GLEP{
                 uniform->SetUniform(this);
 
                 _uniforms.push_back(uniform);
+
+                return uniform;
             }
 
 
@@ -157,15 +160,19 @@ namespace GLEP{
             /// @tparam T Uniform type
             /// @param name Uniform name
             /// @param value Uniform value to set
-            /// @return The uniform that's value was updated, will return nullptr if not found.
+            /// @param addNotFound Add the uniform if it is not found, otherwise return nullptr
+            /// @return The uniform that's value was updated
             template <typename T>
-            std::shared_ptr<ShaderUniform<T>> SetUniformValue(const std::string& name, T value){
+            std::shared_ptr<ShaderUniform<T>> SetUniformValue(const std::string& name, T value, bool addNotFound = false){
                 std::shared_ptr<ShaderUniform<T>> uniform = GetUniform<T>(name);
 
-                if(!uniform) return nullptr;
+                if(!uniform && !addNotFound)
+                    return nullptr;
+                
+                if(!uniform)
+                    return AddUniform<T>(name, value); 
                 
                 uniform->Value = value;
-
                 return uniform;
             }
 
@@ -224,7 +231,7 @@ namespace GLEP{
                 0 = DIFFUSE
                 1 = SPECULAR
                 2 = NORMAL
-                3 = HEIGHT
+                3 = DISPLACEMENT
             
             FRAMEBUFFER
                 4 = COLOR

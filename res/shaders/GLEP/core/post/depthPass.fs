@@ -14,10 +14,14 @@ struct Framebuffer{
     sampler2D depth;
 };
 
-uniform Framebuffer uFramebuffer;
+struct Material{
+    Framebuffer framebuffer;
+};
+
+uniform Material uMaterial;
 
 void main()
 {
-    float depth = texture(uFramebuffer.depth, v.uv).r;
+    float depth = texture(uMaterial.framebuffer.depth, v.uv).r;
     FragColor = vec4(vec3(depth), 1.0);
 } 

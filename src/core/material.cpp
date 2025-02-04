@@ -246,7 +246,7 @@ namespace GLEP {
             glUniform1i(GetUniformLocation(name + ".diffuseTex"), 0);
             glUniform1i(GetUniformLocation(name + ".specularTex"), 1);
             glUniform1i(GetUniformLocation(name + ".normalTex"), 2);
-            glUniform1i(GetUniformLocation(name + ".heightTex"), 3);
+            glUniform1i(GetUniformLocation(name + ".dispTex"), 3);
 
             value->Bind();
         }

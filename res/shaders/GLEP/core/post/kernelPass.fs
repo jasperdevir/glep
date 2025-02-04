@@ -17,9 +17,9 @@ struct Framebuffer{
 struct Material{
     float offset;
     float kernel[9];
-};
 
-uniform Framebuffer uFramebuffer;
+    Framebuffer framebuffer;
+};
 
 uniform Material uMaterial;
 
@@ -40,7 +40,7 @@ void main()
     vec3 sampleTex[9];
     for(int i = 0; i < 9; i++)
     {
-        sampleTex[i] = vec3(texture(uFramebuffer.color, v.uv + offsets[i] * uMaterial.offset));
+        sampleTex[i] = vec3(texture(uMaterial.framebuffer.color, v.uv + offsets[i] * uMaterial.offset));
     }
 
     vec3 col = vec3(0.0);
