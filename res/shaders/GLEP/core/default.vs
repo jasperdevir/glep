@@ -35,9 +35,10 @@ out GLEPInfo i;
 
 void main(){
     v.position = vec3(model * vec4(aPos, 1.0));
-    v.normal = vec3(model * vec4(aNormal, 1.0));
+    v.normal = mat3(transpose(inverse(model))) * aNormal; 
     v.uv = aTexCoords;
     v.lightSpacePosition = lightSpaceMatrix * vec4(v.position, 1.0);
+    
     mat3 normalMatrix = transpose(inverse(mat3(model)));
     vec3 T = normalize(normalMatrix * aTangent);
     vec3 N = normalize(normalMatrix * aNormal);

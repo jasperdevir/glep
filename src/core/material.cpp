@@ -53,6 +53,15 @@ namespace GLEP {
             glCullFace((GLenum)CullFace);
         }
 
+        /*
+            if(!GetUniform<bool>("hasNormalMap"))
+            AddUniform<bool>("hasNormalMap", false);
+
+        if(!GetUniform<bool>("hasDispMap"))
+            AddUniform<bool>("hasDispMap", false);
+        */
+        
+
         _shader->Use();
         
         for (auto& uniform : _uniforms) {
@@ -237,17 +246,6 @@ namespace GLEP {
     void Material::SetUniform(const std::string &name, std::shared_ptr<Texture> value){
         if(value){
             glUniform1i(GetUniformLocation(name), (int)value->GetType()); 
-            value->Bind();
-        }
-    }
-
-    void Material::SetUniform(const std::string &name, std::shared_ptr<TextureMap> value){
-        if(value){
-            glUniform1i(GetUniformLocation(name + ".diffuseTex"), 0);
-            glUniform1i(GetUniformLocation(name + ".specularTex"), 1);
-            glUniform1i(GetUniformLocation(name + ".normalTex"), 2);
-            glUniform1i(GetUniformLocation(name + ".dispTex"), 3);
-
             value->Bind();
         }
     }

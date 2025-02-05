@@ -51,6 +51,7 @@ namespace GLEP {
         else if (_nrChannels == 4)
             format = GL_RGBA;
 
+
         glBindTexture(GL_TEXTURE_2D, _ID);
         glTexImage2D(GL_TEXTURE_2D, 0, format, _width, _height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -62,28 +63,36 @@ namespace GLEP {
 
         stbi_image_free(data);
 
-        glBindTexture(GL_TEXTURE_2D, 0);
+        _hasInit = true;
     }
 
     void Texture::SetWrap(TextureWrap wrap){
+        if(!_hasInit) return;
+
         glBindTexture(GL_TEXTURE_2D, _ID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)wrap);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)wrap);
     }
 
     void Texture::SetWrap(TextureWrap s, TextureWrap t){
+        if(!_hasInit) return;
+
         glBindTexture(GL_TEXTURE_2D, _ID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)s);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)t);
     }
 
     void Texture::SetBorderColor(Color color){
+        if(!_hasInit) return;
+
         glBindTexture(GL_TEXTURE_2D, _ID);
         float borderColor[4] = {color.r, color.g, color.b, color.a};
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);  
     }
 
     void Texture::SetFilter(TextureFilter filter){
+        if(!_hasInit) return;
+
         glBindTexture(GL_TEXTURE_2D, _ID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)filter);
@@ -91,6 +100,8 @@ namespace GLEP {
     }
 
     void Texture::SetFilter(TextureFilter min, TextureFilter mag){
+        if(!_hasInit) return;
+
         glBindTexture(GL_TEXTURE_2D, _ID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)min);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)mag);
@@ -98,6 +109,8 @@ namespace GLEP {
     }
 
     void Texture::Bind(){
+        if(!_hasInit) return;
+
         glActiveTexture(GL_TEXTURE0 + (int)_type);
         glBindTexture(GL_TEXTURE_2D, _ID);
     }

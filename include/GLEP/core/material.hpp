@@ -106,11 +106,12 @@ namespace GLEP{
             /// @return Created uniform
             template <typename T>
             std::shared_ptr<ShaderUniform<T>> AddUniform(const std::string& name, T value) {
-                if(name == "normalTex" && GetUniform<bool>("hasNormalTex") == nullptr){
-                    AddUniform<bool>("hasNormalTex", true);
-                } else if (name == "dispTex" && GetUniform<bool>("hasDispTex") == nullptr){
-                    AddUniform<bool>("hasDispTex", true);
-                    AddUniform<float>("dispScale", 0.1f);
+                if(name == "normalTex"){
+                    SetUniformValue<bool>("hasNormalTex", true, true);
+                } else if (name == "dispTex"){
+                    SetUniformValue<bool>("hasDispTex", true, true);
+                    if(!GetUniform<float>("dispScale"))
+                        AddUniform<float>("dispScale", 0.1f);
                 }
 
                 std::string uniformName = "uMaterial." + name;
@@ -245,11 +246,6 @@ namespace GLEP{
             /// @param name Uniform name
             /// @param value Uniform value to set
             void SetUniform(const std::string &name, std::shared_ptr<Texture> value);
-
-            /// @brief Set a uniform value.
-            /// @param name Uniform name
-            /// @param value Uniform value to set
-            void SetUniform(const std::string &name, std::shared_ptr<TextureMap> value);
 
             /// @brief Set a uniform value.
             /// @param name Uniform name

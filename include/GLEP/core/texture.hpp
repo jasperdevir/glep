@@ -64,6 +64,7 @@ namespace GLEP{
             int _width;
             int _height;
             int _nrChannels;
+            bool _hasInit;
 
             std::filesystem::path _filePath;
             TextureType _type;

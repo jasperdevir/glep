@@ -18,6 +18,7 @@
 /* GLEP - Example 8: Shadows */
 
 #include <GLEP/core.hpp>
+#include <GLEP/control/camera/first_person.hpp>
 
 using namespace GLEP;
 
@@ -42,6 +43,8 @@ int main(){
     camera->Rotation = glm::quat(glm::lookAt(camera->Position, glm::vec3(0.0f), Camera::UP));
 
     std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>(window, camera);
+
+    std::shared_ptr<Control::FirstPersonController> controls = std::make_shared<Control::FirstPersonController>(camera, 1.0f, 0.1f);
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
     /* ------------------------------------------------------ */
@@ -78,6 +81,7 @@ int main(){
         backpackGeometry,
         phongMaterial
     );
+    backpack0->CalculateNormals();
     backpack0->Scale = glm::vec3(0.003f);
     scene->Add(backpack0);
 
@@ -115,6 +119,8 @@ int main(){
 
         backpack0->Position = glm::vec3(-1.0f * moveX, 1.0f, 0.0f);
         bunny0->Position = glm::vec3(1.0f * moveX, 0.0f, 2.0f);
+
+        controls->Update(renderer->TargetWindow);
 
         renderer->Render(scene); // Render 
         renderer->EndFrame(); // End frame, poll events
