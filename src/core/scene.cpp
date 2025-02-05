@@ -119,7 +119,7 @@ namespace GLEP {
                 std::shared_ptr<Material> material = mesh->MaterialData;
                 if(material->BakeRequired){
                     auto closest = findClosestCubeMap(model->GetWorldPosition());
-                    material->SetUniformValue<std::shared_ptr<CubeMap>>("uMaterial.cubeMap", closest);
+                    material->SetUniformValue<std::shared_ptr<CubeMap>>("cubeMap", closest);
                 }
             }
         }

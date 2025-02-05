@@ -140,9 +140,8 @@ namespace GLEP {
         }
 
         for (Vertex v : _vertices) {
-            if (glm::length(v.Normal) > 0.0f) {
-                v.Normal = glm::normalize(v.Normal);
-            }
+            v.Normal = glm::normalize(v.Normal);
+            v.Tangent = glm::normalize(v.Tangent);
         }
 
         glBindVertexArray(_VAO);

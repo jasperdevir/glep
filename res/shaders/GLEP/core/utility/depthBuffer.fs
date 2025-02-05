@@ -5,6 +5,7 @@ struct Vertex {
     vec3 tangentPosition;
     vec4 lightSpacePosition;
     vec2 uv;
+    vec3 normal;
     mat3 tbn;
 };
 

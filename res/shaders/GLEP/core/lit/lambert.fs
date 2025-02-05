@@ -5,6 +5,7 @@ struct Vertex {
     vec3 tangentPosition;
     vec4 lightSpacePosition;
     vec2 uv;
+    vec3 normal;
     mat3 tbn;
 };
 
@@ -228,7 +229,7 @@ void main(){
             discard;
     }
 
-    vec3 normal = v.tbn[2];
+    vec3 normal = normalize(v.normal);
     if(uMaterial.hasNormalTex){
         normal = texture(uMaterial.normalTex, texCoords).rgb;
         normal = normalize(normal * 2.0 - 1.0);

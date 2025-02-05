@@ -73,7 +73,7 @@ int main(){
         Color::WHITE,
         32.0f
     );
-    
+
     std::shared_ptr<Model> floor = std::make_shared<Model>(floorGeometry, floorMaterial);
     floor->Position.y = -1.0f;
     floor->Scale = glm::vec3(5.0f, 0.5f, 5.0f);
@@ -114,11 +114,7 @@ int main(){
         bunnyGeometry,
         phongMaterial
     );
-    for(auto& m : bunny0->GetMeshes()){
-        for(auto& u : m->MaterialData->GetUniforms()){
-            Print(PrintCode::INFO, u->Name);
-        }
-    }
+
     bunny1->Scale = glm::vec3(6.0f);
     bunny1->Position = glm::vec3(1.0f, -1.0f, 1.0f);
     scene->Add(bunny1);

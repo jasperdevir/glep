@@ -74,7 +74,7 @@ void InitScene(){
     std::shared_ptr<LambertMaterial> sponzaMaterial = std::make_shared<LambertMaterial>(std::shared_ptr<Texture>(nullptr));
     sponzaMaterial->ReceiveShadows = true;
     sponzaMaterial->CastShadows = true;
-    std::shared_ptr<ImportGeometryModel> sponza = std::make_shared<ImportGeometryModel>(sponzaPath, sponzaMaterial);
+    std::shared_ptr<ImportGeometryModel> sponza = std::make_shared<ImportGeometryModel>(sponzaPath, sponzaMaterial, false);
     sponza->ApplyImportTextures(sponzaTextures);
     sponza->Scale = glm::vec3(0.01f);
     scene->Add(sponza);
@@ -186,19 +186,19 @@ void GuiRender(){
     ImGui::Separator();
     ImGui::Text("Fog");
 
-    std::array<float, 4> fogColor = fogPass->GetMaterial()->GetUniform<Color>("uMaterial.fogColor")->Value.ToArray();
+    std::array<float, 4> fogColor = fogPass->GetMaterial()->GetUniform<Color>("fogColor")->Value.ToArray();
     if(ImGui::ColorEdit4("Fog Color", fogColor.data())){
-        fogPass->GetMaterial()->SetUniformValue<Color>("uMaterial.fogColor", fogColor);
+        fogPass->GetMaterial()->SetUniformValue<Color>("fogColor", fogColor);
     }
 
-    float fogNear = fogPass->GetMaterial()->GetUniform<float>("uMaterial.nearPlane")->Value;
+    float fogNear = fogPass->GetMaterial()->GetUniform<float>("nearPlane")->Value;
     if(ImGui::SliderFloat("Fog Near Plane", &fogNear, 0.0001f, 1.0f)){
-        fogPass->GetMaterial()->SetUniformValue<float>("uMaterial.nearPlane", fogNear);
+        fogPass->GetMaterial()->SetUniformValue<float>("nearPlane", fogNear);
     }
 
-    float fogFar = fogPass->GetMaterial()->GetUniform<float>("uMaterial.farPlane")->Value;
+    float fogFar = fogPass->GetMaterial()->GetUniform<float>("farPlane")->Value;
     if(ImGui::SliderFloat("Fog Far Plane", &fogFar, 0.0001f, 20.0f)){
-        fogPass->GetMaterial()->SetUniformValue<float>("uMaterial.farPlane", fogFar);
+        fogPass->GetMaterial()->SetUniformValue<float>("farPlane", fogFar);
     }
     
     
@@ -227,7 +227,7 @@ int main(){
     InitLighting();
     InitPostProcessing();
     InitAudio();
-    //renderer->GuiRenderFunc = GuiRender;
+    renderer->GuiRenderFunc = GuiRender;
     Update();   
     
     return 0;

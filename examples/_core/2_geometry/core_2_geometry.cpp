@@ -47,7 +47,7 @@ int main(){
     /* ------------------------------------------------------ */
 
     /* -------------------Buffer Geometry------------------ */
-    // Vertex - Position(vec3), Normal(vec3), TextureCoord(vec2)
+    // Vertex - Position(vec3), Normal(vec3), TextureCoord(vec2), Tangent(vec3)
 
     // Pyramid Buffer Geometry
     std::vector<Vertex> vertices = {

@@ -83,9 +83,9 @@ namespace GLEP {
             Color ClearColor = Color::BLACK;
 
             float ShadowMapDistance = 2.0f;
-            bool RenderShadows = true;
+            bool RenderShadows = false;
 
-            bool DebugRenderMode = true;
+            bool DebugRenderMode = false;
             bool DB_OverrideMaterialDebugMode = false;
             bool DB_DrawLightPositions = true;
             bool DB_DrawLightDirections = true;

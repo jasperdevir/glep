@@ -5,6 +5,7 @@ struct Vertex {
     vec3 tangentPosition;
     vec4 lightSpacePosition;
     vec2 uv;
+    vec3 normal;
     mat3 tbn;
 };
 
@@ -117,7 +118,7 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 matDiffuse, vec3 matSpecul
     if(uMaterial.hasNormalTex){
         vec3 lightPos = v.tbn * light.position;
         lightDir = normalize(lightPos - v.tangentPosition);
-    }else {
+    } else {
         lightDir = normalize(light.position - v.position);
     }
 
@@ -257,7 +258,7 @@ void main(){
             discard;
     }
 
-    vec3 normal = v.tbn[2];
+    vec3 normal = normalize(v.normal);
     if(uMaterial.hasNormalTex){
         normal = texture(uMaterial.normalTex, texCoords).rgb;
         normal = normalize(normal * 2.0 - 1.0);

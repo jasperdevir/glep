@@ -92,7 +92,7 @@ namespace GLEP{
 
     void ImportModelTexture::initialize(){
         Assimp::Importer import;
-        const aiScene *scene = import.ReadFile(_filePath.string(), aiProcess_Triangulate | aiProcess_FlipUVs);
+        const aiScene *scene = import.ReadFile(_filePath.string(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
         if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
         {
@@ -123,6 +123,8 @@ namespace GLEP{
         std::shared_ptr<Texture> diffuseMap = loadMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, TextureType::DIFFUSE);
         std::shared_ptr<Texture> specularMap = loadMaterialTexture(aiMaterial, aiTextureType_SPECULAR, TextureType::SPECULAR);
         std::shared_ptr<Texture> normalMap = loadMaterialTexture(aiMaterial, aiTextureType_NORMALS, TextureType::NORMAL);
+        if(!normalMap)
+            normalMap = loadMaterialTexture(aiMaterial, aiTextureType_HEIGHT, TextureType::NORMAL);
         std::shared_ptr<Texture> dispMap = loadMaterialTexture(aiMaterial, aiTextureType_DISPLACEMENT, TextureType::DISP);
 
         return std::make_shared<TextureMap>(diffuseMap, specularMap, normalMap, dispMap);
@@ -202,14 +204,14 @@ namespace GLEP{
 
             if(diffuseTex != nullptr){
                 if(specularTex != nullptr){
-                    meshMat->SetUniformValue<float>("type", 3, true);
+                    meshMat->SetUniformValue<int>("type", 3, true);
                 } else {
-                    meshMat->SetUniformValue<float>("type", 2, true);
+                    meshMat->SetUniformValue<int>("type", 2, true);
                     meshMat->SetUniformValue<Color>("specularColor", Color::WHITE, true);
-                    Print(PrintCode::INFO, "IMPORT_GEOMETRY_MODEL", "Specular texture is null. Applying Color::WHITE.");
+                    //Print(PrintCode::INFO, "IMPORT_GEOMETRY_MODEL", "Specular texture is null. Applying Color::WHITE.");
                 }
             } else {
-                meshMat->SetUniformValue<float>("type", 1, true);
+                meshMat->SetUniformValue<int>("type", 1, true);
                 meshMat->SetUniformValue<Color>("diffuseColor", Color::CLEAR, true);
                 meshMat->SetUniformValue<Color>("specularColor", Color::CLEAR, true);
                 Print(PrintCode::ERROR, "IMPORT_GEOMETRY_MODEL", "Diffuse texture is null. Applying Color::CLEAR to diffuse and specular.");
@@ -228,8 +230,8 @@ namespace GLEP{
                 meshMat->SetUniformValue<std::shared_ptr<Texture>>("normalTex", normalTex, true);
             
 
-            if(dispTex)
-                meshMat->SetUniformValue<std::shared_ptr<Texture>>("dispTex", dispTex, true);
+            //if(dispTex)
+                //meshMat->SetUniformValue<std::shared_ptr<Texture>>("dispTex", dispTex, true);
             
         }
     }
@@ -349,6 +351,8 @@ namespace GLEP{
         std::shared_ptr<Texture> diffuseMap = loadMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, TextureType::DIFFUSE);
         std::shared_ptr<Texture> specularMap = loadMaterialTexture(aiMaterial, aiTextureType_SPECULAR, TextureType::SPECULAR);
         std::shared_ptr<Texture> normalMap = loadMaterialTexture(aiMaterial, aiTextureType_NORMALS, TextureType::NORMAL);
+        if(!normalMap)
+            normalMap = loadMaterialTexture(aiMaterial, aiTextureType_HEIGHT, TextureType::NORMAL);
         std::shared_ptr<Texture> dispMap = loadMaterialTexture(aiMaterial, aiTextureType_DISPLACEMENT, TextureType::DISP);
 
         std::shared_ptr<Geometry> geometry = std::make_shared<Geometry>(vertices, indices);

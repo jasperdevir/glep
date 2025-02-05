@@ -58,7 +58,7 @@ int main(){
     );
     phongMaterial->CastShadows = true; // Enable this material during shadow map rendering
 
-    std::shared_ptr<Geometry> floorGeometry = std::make_shared<CubeGeometry>(1.0f, 1.0f, 1.0f);
+    std::shared_ptr<Geometry> floorGeometry = std::make_shared<PlaneGeometry>(5.0f, 5.0f);
     std::shared_ptr<Texture> floorTexture = std::make_shared<Texture>(File::GLEP_DEFUALT_TEXTURE);
     std::shared_ptr<Material> floorMaterial = std::make_shared<PhongMaterial>(
         floorTexture,
@@ -68,8 +68,8 @@ int main(){
     floorMaterial->ReceiveShadows = true; // Enable this material to apply the shadow map result to its lighting
     
     std::shared_ptr<Model> floor = std::make_shared<Model>(floorGeometry, floorMaterial);
-    floor->Position.y = -1.0f;
-    floor->Scale = glm::vec3(5.0f, 0.5f, 5.0f);
+    floor->Position.y = -0.5f;
+    floor->Rotation = glm::rotate(floor->Rotation, glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
     scene->Add(floor);
 
     std::shared_ptr<ImportGeometry> backpackGeometry = std::make_shared<ImportGeometry>(File::DIRECTORY / "examples" / "res" / "models" / "backpack" / "backpack.obj");

@@ -10,6 +10,7 @@ struct Vertex {
     vec3 tangentPosition;
     vec4 lightSpacePosition;
     vec2 uv;
+    vec3 normal;
     mat3 tbn;
 };
 
@@ -34,6 +35,7 @@ out GLEPInfo i;
 
 void main(){
     v.position = vec3(model * vec4(aPos, 1.0));
+    v.normal = vec3(model * vec4(aNormal, 1.0));
     v.uv = aTexCoords;
     v.lightSpacePosition = lightSpaceMatrix * vec4(v.position, 1.0);
     mat3 normalMatrix = transpose(inverse(mat3(model)));

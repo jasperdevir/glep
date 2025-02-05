@@ -113,7 +113,6 @@ namespace GLEP{
                     AddUniform<float>("dispScale", 0.1f);
                 }
 
-
                 std::string uniformName = "uMaterial." + name;
                 std::shared_ptr<ShaderUniform<T>> uniform = std::make_shared<ShaderUniform<T>>(uniformName, value);
                 uniform->SetUniform(this);
@@ -169,8 +168,9 @@ namespace GLEP{
                 if(!uniform && !addNotFound)
                     return nullptr;
                 
-                if(!uniform)
+                if(!uniform){
                     return AddUniform<T>(name, value); 
+                }
                 
                 uniform->Value = value;
                 return uniform;

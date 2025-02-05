@@ -5,6 +5,7 @@ struct Vertex {
     vec3 tangentPosition;
     vec4 lightSpacePosition;
     vec2 uv;
+    vec3 normal;
     mat3 tbn;
 };
 
@@ -31,7 +32,7 @@ void main()
 {             
     float ratio = 1.00 / uMaterial.refractiveIndex;
     vec3 I = normalize(v.position - i.viewPos);
-    vec3 R = refract(I, normalize(v.tbn[2]), ratio);
+    vec3 R = refract(I, normalize(v.normal), ratio);
 
     vec3 finalColor = texture(uMaterial.cubeMap, R).rgb;
     finalColor *= uMaterial.tint.rgb;
