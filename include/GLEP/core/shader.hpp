@@ -19,6 +19,7 @@
 #define SHADER_HPP
 
 #include <GLEP/core/utility/print.hpp>
+#include <GLEP/core/utility/file.hpp>
 
 #include <filesystem>
 #include <memory>
@@ -35,9 +36,12 @@ namespace GLEP {
     class Shader{
         private:
             std::filesystem::path _vsFilePath;
+            std::filesystem::path _gsFilePath;
             std::filesystem::path _fsFilePath;
             std::string _vsSrc;
+            std::string _gsSrc;
             std::string _fsSrc;
+
 
             unsigned int _ID;
 
@@ -48,7 +52,9 @@ namespace GLEP {
 
         public:
             Shader();
+            Shader(std::filesystem::path fsFilePath);
             Shader(std::filesystem::path vsFilePath, std::filesystem::path fsFilePath);
+            Shader(std::filesystem::path vsFilePath, std::filesystem::path gsFilePath, std::filesystem::path fsFilePath);
             ~Shader();
 
             /// @brief Get the shader program ID.
@@ -58,6 +64,10 @@ namespace GLEP {
             /// @brief Get the file path of the vertex shader.
             /// @return Vertex shader file path
             std::filesystem::path GetVsPath();
+
+            /// @brief Get the file path of the Geometry shader.
+            /// @return Geometry shader file path
+            std::filesystem::path GetGsPath();
 
             /// @brief Get the file path of the fragment shader.
             /// @return Fragment shader file path

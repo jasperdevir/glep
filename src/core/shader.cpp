@@ -21,9 +21,24 @@ namespace GLEP {
 
     Shader::Shader(){}
 
+    Shader::Shader(std::filesystem::path fsFilePath){
+        _vsFilePath = File::GLEP_DEFAULT_VERTEX_SHADER;
+        _fsFilePath = fsFilePath;
+
+        initialize();
+    }
+
     Shader::Shader(std::filesystem::path vsFilePath, std::filesystem::path fsFilePath){
         _vsFilePath = vsFilePath;
         _fsFilePath = fsFilePath;
+
+        initialize();
+    }
+
+    Shader::Shader(std::filesystem::path vsFilePath, std::filesystem::path gsFilePath, std::filesystem::path fsFilePath){
+        _vsFilePath = vsFilePath;
+        _fsFilePath = fsFilePath;
+        _gsFilePath = gsFilePath;
 
         initialize();
     }
@@ -34,25 +49,39 @@ namespace GLEP {
 
     bool Shader::readFiles(){
         std::string vertexCode;
+        std::string geometryCode;
         std::string fragmentCode;
         std::ifstream vShaderFile;
+        std::ifstream gShaderFile;
         std::ifstream fShaderFile;
         vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+        gShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+
         try 
         {
             vShaderFile.open(_vsFilePath.string());
             fShaderFile.open(_fsFilePath.string());
+
             std::stringstream vShaderStream, fShaderStream;
 
             vShaderStream << vShaderFile.rdbuf();
             fShaderStream << fShaderFile.rdbuf();
+                
 
             vShaderFile.close();
             fShaderFile.close();
 
             vertexCode   = vShaderStream.str();
             fragmentCode = fShaderStream.str();
+
+            if(!_gsFilePath.empty()){
+                gShaderFile.open(_gsFilePath.string());
+                std::stringstream gShaderStream;
+                gShaderStream << gShaderFile.rdbuf();
+                gShaderFile.close();
+                geometryCode = gShaderStream.str();
+            }
         }
         catch (std::ifstream::failure& e)
         {
@@ -61,6 +90,7 @@ namespace GLEP {
         }
         _vsSrc = vertexCode;
         _fsSrc = fragmentCode;
+        _gsSrc = geometryCode;
 
         return true;
     }
@@ -77,7 +107,8 @@ namespace GLEP {
                 
                 std::filesystem::path path;
                 if(type == "VERTEX") path = _vsFilePath;
-                else path = _fsFilePath;
+                else if (type == "FRAGMENT") path = _fsFilePath;
+                else path = _gsFilePath;
 
                 Print(PrintCode::ERROR, "SHADER", "Failed to compile " + type + " shader at " + path.string() + ": \n" + infoLog + "\n -- --------------------------------------------------- -- ");
                 return false;
@@ -100,7 +131,7 @@ namespace GLEP {
     bool Shader::initialize(){
         readFiles();
 
-        unsigned int vertex, fragment;
+        unsigned int vertex, fragment, geometry;
         
         /* VERTEX SHADER */
         vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -120,10 +151,24 @@ namespace GLEP {
             return false;
         }
 
+        /* GEOMETRY SHADER */
+        if(!_gsFilePath.empty()){
+            geometry = glCreateShader(GL_GEOMETRY_SHADER);
+            const char* gsSource = _gsSrc.c_str();
+            glShaderSource(geometry, 1, &gsSource, NULL);
+            glCompileShader(geometry);
+            if(!checkCompileErrors(geometry, "GEOMETRY")){
+                return false;
+            }
+        }
+
         /* SHADER PROGRAM*/
         _ID = glCreateProgram();
         glAttachShader(_ID, vertex);
         glAttachShader(_ID, fragment);
+        if(!_gsFilePath.empty())
+            glAttachShader(_ID, geometry);
+
         glLinkProgram(_ID);
         if(!checkCompileErrors(_ID, "PROGRAM")) {
             return false;
@@ -131,6 +176,8 @@ namespace GLEP {
 
         glDeleteShader(vertex);
         glDeleteShader(fragment);
+        if(!_gsFilePath.empty())
+            glDeleteShader(geometry);
 
         glUseProgram(_ID);
 
@@ -151,5 +198,9 @@ namespace GLEP {
 
     std::filesystem::path Shader::GetFsPath(){
         return _fsFilePath;
+    }
+
+    std::filesystem::path Shader::GetGsPath(){
+        return _gsFilePath;
     }
 }

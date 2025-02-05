@@ -56,9 +56,12 @@ namespace GLEP {
             bool _isGuiInitalized = false;
             bool _isGuiShutdown = false;
 
-            std::shared_ptr<Framebuffer> _shadowMapBuffer;
-            std::shared_ptr<Camera> _shadowMapCamera;
-            glm::mat4 _lightSpaceMatrix = glm::mat4(1.0f);
+            std::shared_ptr<Framebuffer> _dirShadowMapBuffer;
+            std::shared_ptr<Camera> _dirShadowMapCamera;
+            glm::mat4 _dirLightSpaceMatrix = glm::mat4(1.0f);
+
+            std::shared_ptr<ShadowCubeMap> _pointShadowCubeMap;
+            std::vector<glm::vec4> _pointLightSpaceMatrices;
 
             std::shared_ptr<Mesh> _DB_lightMesh;
             std::shared_ptr<Mesh> _DB_normalDirMesh;
@@ -67,7 +70,8 @@ namespace GLEP {
             void initializeGui();
 
             void renderSkybox(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera, bool depthTest = true);
-            void renderShadowMap(std::shared_ptr<Scene> scene);
+            void renderDirShadowMap(std::shared_ptr<Scene> scene);
+            void renderPointShadowMap(std::shared_ptr<Scene> scene);
             void renderSceneObjects(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera, RenderType type = RenderType::NORMAL);
             void renderDebugMode(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera);
             void renderMesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> mat, std::shared_ptr<Scene> scene, glm::vec3 cameraPos, glm::mat4 projection, glm::mat4 view, glm::mat4 model, RenderType type);

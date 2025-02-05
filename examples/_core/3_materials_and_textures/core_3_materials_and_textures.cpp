@@ -71,7 +71,7 @@ int main(){
 
     /* ----------------------Textures------------------------ */
     std::shared_ptr<Texture> defaultTexture = std::make_shared<Texture>(
-        File::GLEP_DEFUALT_TEXTURE, // Image file path
+        File::GLEP_DEFAULT_TEXTURE, // Image file path
         TextureType::DIFFUSE // Texture Type (Diffuse, Specular, Normal, Height)
     );
     std::shared_ptr<Texture> containerATexture = std::make_shared<Texture>(

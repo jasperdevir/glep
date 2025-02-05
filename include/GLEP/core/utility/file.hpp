@@ -46,12 +46,14 @@ namespace GLEP{
             /// @brief $DIR/res/audio/
             const static std::filesystem::path AUDIO_PATH;
 
-
             /// @brief $DIR/res/shaders/GLEP/
             const static std::filesystem::path GLEP_SHADERS_PATH;
 
+            /// @brief $DIR/res/shaders/GLEP/core/default.vs
+            const static std::filesystem::path GLEP_DEFAULT_VERTEX_SHADER;
+
             /// @brief $DIR/res/textures/GLEP/core/default.png
-            const static std::filesystem::path GLEP_DEFUALT_TEXTURE;
+            const static std::filesystem::path GLEP_DEFAULT_TEXTURE;
 
             /// @brief $DIR/res/texture/GLEP/core/cube_maps/default.cubemap
             const static std::filesystem::path GLEP_DEFAULT_CUBE_MAP;

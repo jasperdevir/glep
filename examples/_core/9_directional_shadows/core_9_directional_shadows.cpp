@@ -15,10 +15,9 @@
  * along with GLEP.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* GLEP - Example 8: Shadows */
+/* GLEP - Example 8: Directional Shadows */
 
 #include <GLEP/core.hpp>
-#include <GLEP/control/camera/first_person.hpp>
 
 using namespace GLEP;
 
@@ -30,7 +29,7 @@ int main(){
     std::shared_ptr<Window> window = std::make_shared<Window>(
         WindowState::WINDOWED, // Window state (Windowed, Windowed Fullscreen, Fullscreen)
         screenResolution, // Window resolution
-        "GLEP Example - Core: Lighting" // Window title
+        "GLEP Example - Core: Directional Shadows" // Window title
     );
 
     std::shared_ptr<Camera> camera = std::make_shared<PerspectiveCamera>(
@@ -43,8 +42,6 @@ int main(){
     camera->Rotation = glm::quat(glm::lookAt(camera->Position, glm::vec3(0.0f), Camera::UP));
 
     std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>(window, camera);
-
-    std::shared_ptr<Control::FirstPersonController> controls = std::make_shared<Control::FirstPersonController>(camera, 1.0f, 0.1f);
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
     /* ------------------------------------------------------ */
@@ -62,7 +59,7 @@ int main(){
     phongMaterial->CastShadows = true; // Enable this material during shadow map rendering
 
     std::shared_ptr<Geometry> floorGeometry = std::make_shared<PlaneGeometry>(5.0f, 5.0f);
-    std::shared_ptr<Texture> floorTexture = std::make_shared<Texture>(File::GLEP_DEFUALT_TEXTURE);
+    std::shared_ptr<Texture> floorTexture = std::make_shared<Texture>(File::GLEP_DEFAULT_TEXTURE);
     std::shared_ptr<Material> floorMaterial = std::make_shared<PhongMaterial>(
         floorTexture,
         Color::WHITE,
@@ -119,8 +116,6 @@ int main(){
 
         backpack0->Position = glm::vec3(-1.0f * moveX, 1.0f, 0.0f);
         bunny0->Position = glm::vec3(1.0f * moveX, 0.0f, 2.0f);
-
-        controls->Update(renderer->TargetWindow);
 
         renderer->Render(scene); // Render 
         renderer->EndFrame(); // End frame, poll events

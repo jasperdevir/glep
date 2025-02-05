@@ -23,6 +23,7 @@
 #include <GLEP/core/texture.hpp>
 #include <GLEP/core/framebuffer.hpp>
 #include <GLEP/core/camera.hpp>
+#include <GLEP/core/material.hpp>
 
 #include <vector>
 #include <memory>
@@ -184,6 +185,24 @@ namespace GLEP{
             /// @param data BakedCubeMap data in JSON format
             /// @return Deserialized BakedCubeMap
             static std::shared_ptr<BakedCubeMap> FromJson(const json& data);
+    };
+
+    class ShadowCubeMap : public CubeMap{
+        private:
+            std::shared_ptr<Camera> _camera;
+            std::shared_ptr<Framebuffer> _framebuffer;
+            std::shared_ptr<Material> _material;
+
+            void initialize() override;
+
+        public: 
+            ShadowCubeMap(glm::vec3 position, int bufferSize = 1024);
+
+            std::shared_ptr<Camera> GetCamera();
+
+            std::shared_ptr<Framebuffer> GetBuffer();
+
+            std::shared_ptr<Material> GetMaterial();
     };
     
 }

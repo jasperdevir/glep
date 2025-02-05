@@ -74,7 +74,7 @@ int main(){
     };
 
     std::shared_ptr<Geometry> geometry = std::make_shared<CubeGeometry>(1.0f, 1.0f, 1.0f);
-    std::shared_ptr<Texture> texture = std::make_shared<Texture>(File::GLEP_DEFUALT_TEXTURE);
+    std::shared_ptr<Texture> texture = std::make_shared<Texture>(File::GLEP_DEFAULT_TEXTURE);
     std::shared_ptr<Material> material = std::make_shared<UnlitMaterial>(texture);
 
     for(int i = 0; i < 10; i++){

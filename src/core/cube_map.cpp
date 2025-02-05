@@ -290,4 +290,44 @@ namespace GLEP{
             data["buffer_size"]
         );
     }
+
+    ShadowCubeMap::ShadowCubeMap(glm::vec3 position, int bufferSize){
+        _camera = std::make_shared<PerspectiveCamera>(-90.0f, 1.0f, 0.01f, 100.0f);
+        _camera->Position = position;
+        _framebuffer = std::make_shared<Framebuffer>(glm::vec2((float)bufferSize));
+
+        std::shared_ptr<Shader> shader = std::make_shared<Shader>(File::GLEP_SHADERS_PATH / "pointShadow.vs", File::GLEP_SHADERS_PATH / "pointShadow.gs", File::GLEP_SHADERS_PATH / "pointShadow.fs");
+        _material = std::make_shared<Material>(shader);
+
+        initialize();
+    }
+
+    void ShadowCubeMap::initialize(){
+        glGenTextures(1, &_ID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, _ID);
+
+        for (int i = 0; i < 6; ++i) {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+        }
+
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        _framebuffer->Bind();
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _ID, 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+    }
+
+    std::shared_ptr<Camera> ShadowCubeMap::GetCamera(){
+        return _camera;
+    }
+
+    std::shared_ptr<Framebuffer> ShadowCubeMap::GetBuffer(){
+        return _framebuffer;
+    }
 }
