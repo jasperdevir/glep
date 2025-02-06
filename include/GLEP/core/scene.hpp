@@ -141,7 +141,7 @@ namespace GLEP {
             /// @tparam T Item type
             /// @return Found item, will return nullptr if not found 
             template <typename T>
-            std::shared_ptr<T>& FindItemByType(){
+            std::shared_ptr<T> FindItemByType(){
                 for(std::shared_ptr<SceneObject> o : _objects){
                     if(auto cast = std::dynamic_pointer_cast<T>(o)){
                         return cast;

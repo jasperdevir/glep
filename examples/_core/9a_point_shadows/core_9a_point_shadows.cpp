@@ -42,25 +42,69 @@ int main(){
     camera->Position = glm::vec3(0.0f, 0.0f, 0.0f);
 
     std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>(window, camera);
+    renderer->RenderShadows = true;
 
     std::shared_ptr<Control::FirstPersonController> controls = std::make_shared<Control::FirstPersonController>(camera, 1.0f, 0.1f);
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
     /* ------------------------------------------------------ */
 
-    std::shared_ptr<Geometry> cubeGeometry = std::make_shared<CubeGeometry>(5.0f, 5.0f, 5.0f);
+    std::shared_ptr<Geometry> planeGeometry = std::make_shared<PlaneGeometry>(10.0f, 10.0f);
+    std::shared_ptr<Geometry> cubeGeometry = std::make_shared<CubeGeometry>(1.0f, 1.0f, 1.0f);
     std::shared_ptr<Texture> interiorTexture = std::make_shared<Texture>(File::GLEP_DEFAULT_TEXTURE);
     /* ---------------Enable shadow renderering-------------- */
-    std::shared_ptr<Material> interiorMaterial = std::make_shared<LambertMaterial>(interiorTexture); 
-    interiorMaterial->CullFace = MaterialCull::FRONT;
+    std::shared_ptr<Material> interiorMaterial = std::make_shared<BlinnPhongMaterial>(interiorTexture, Color::WHITE, 16.0f); 
     interiorMaterial->ReceiveShadows = true;
 
-    std::shared_ptr<Model> interior = std::make_shared<Model>(cubeGeometry, interiorMaterial);
-    scene->Add(interior);
+    std::shared_ptr<Model> frontWall = std::make_shared<Model>(planeGeometry, interiorMaterial);
+    frontWall->Position.z = -5.0f;
+    scene->Add(frontWall);
+
+    std::shared_ptr<Model> backWall = std::make_shared<Model>(planeGeometry, interiorMaterial);
+    backWall->Position.z = 5.0f;
+    backWall->Rotation = glm::rotate(backWall->Rotation, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    scene->Add(backWall);
+
+    std::shared_ptr<Model> leftWall = std::make_shared<Model>(planeGeometry, interiorMaterial);
+    leftWall->Position.x = -5.0f;
+    leftWall->Rotation = glm::rotate(leftWall->Rotation, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    scene->Add(leftWall);
+
+    std::shared_ptr<Model> rightWall = std::make_shared<Model>(planeGeometry, interiorMaterial);
+    rightWall->Position.x = 5.0f;
+    rightWall->Rotation = glm::rotate(rightWall->Rotation, glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    scene->Add(rightWall);
+
+    std::shared_ptr<Model> topWall = std::make_shared<Model>(planeGeometry, interiorMaterial);
+    topWall->Position.y = -5.0f;
+    topWall->Rotation = glm::rotate(topWall->Rotation, glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+    scene->Add(topWall);
+
+    std::shared_ptr<Model> botWall = std::make_shared<Model>(planeGeometry, interiorMaterial);
+    botWall->Position.y = 5.0f;
+    botWall->Rotation = glm::rotate(botWall->Rotation, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    scene->Add(botWall);
+
+    std::shared_ptr<Material> castMaterial = std::make_shared<BlinnPhongMaterial>(Color::GLEP_GREEN, Color::WHITE, 16.0f);
+    castMaterial->CastShadows = true;
+
+    std::shared_ptr<Model> cube0 = std::make_shared<Model>(cubeGeometry, castMaterial);
+    cube0->Position = glm::vec3(4.0f, -3.5f, 0.0);
+    scene->Add(cube0);
     
     /* ----------------Add Lights to the scene--------------- */
     std::shared_ptr<AmbientLight> ambientLight = std::make_shared<AmbientLight>(Color(1.0f), 0.2f);
     scene->Add(ambientLight);
+
+    std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>(
+        glm::vec3(0.0f),
+        Color::WHITE,
+        1.0f,
+        1.0f,
+        0.09f,
+        0.032f
+    );
+    scene->Add(pointLight);
 
     /* ------------------------------------------------------ */
 

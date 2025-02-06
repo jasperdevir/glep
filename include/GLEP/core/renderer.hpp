@@ -61,7 +61,7 @@ namespace GLEP {
             glm::mat4 _dirLightSpaceMatrix = glm::mat4(1.0f);
 
             std::shared_ptr<ShadowCubeMap> _pointShadowCubeMap;
-            std::vector<glm::vec4> _pointLightSpaceMatrices;
+            std::shared_ptr<Material> _pointShadowMapMaterial;
 
             std::shared_ptr<Mesh> _DB_lightMesh;
             std::shared_ptr<Mesh> _DB_normalDirMesh;

@@ -46,6 +46,10 @@ namespace GLEP{
         _dirShadowMapBuffer = std::make_shared<Framebuffer>(glm::vec2(1024)); 
         _dirShadowMapCamera = std::make_shared<OrthographicCamera>(10.0f, 1.0f, 0.01f, 10.0f);
 
+        _pointShadowCubeMap = std::make_shared<ShadowCubeMap>(glm::vec3(0.0f), 1042);
+        std::shared_ptr<Shader> pointShadowShader = std::make_shared<Shader>(File::GLEP_SHADERS_PATH / "pointShadow.vs", File::GLEP_SHADERS_PATH / "pointShadow.gs", File::GLEP_SHADERS_PATH / "pointShadow.fs");
+        _pointShadowMapMaterial = std::make_shared<Material>(pointShadowShader);
+
         std::shared_ptr<Geometry> db_lightGeometry = std::make_shared<CubeGeometry>(0.25f, 0.25f, 0.25f);
         std::shared_ptr<Material> db_lightMaterial = std::make_shared<UnlitMaterial>(Color(1.0f));
         _DB_lightMesh = std::make_shared<Mesh>(db_lightGeometry, db_lightMaterial);
@@ -219,6 +223,7 @@ namespace GLEP{
             if(RenderShadows && mat->ReceiveShadows)
                 mat->SetUniform("lightSpaceMatrix", glm::value_ptr(_dirLightSpaceMatrix));
                 mat->SetUniform("uShadowMap", _dirShadowMapBuffer);
+                mat->SetUniform("uPointShadowMap", _pointShadowCubeMap);
 
             mat->SetUniform("viewPos", cameraPos);
             mat->SetUniform("time", Time::GetElapsedTimeF());
@@ -346,21 +351,21 @@ namespace GLEP{
         shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 0.0, 1.0), glm::vec3(0.0,-1.0, 0.0)));
         shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 0.0,-1.0), glm::vec3(0.0,-1.0, 0.0)));
 
-        SetViewport(0, 0, _pointShadowCubeMap->GetBuffer()->GetWidth(), _pointShadowCubeMap->GetBuffer()->GetHeight());
+        SetViewport(0, 0, _pointShadowCubeMap->GetWidth(), _pointShadowCubeMap->GetHeight());
         _pointShadowCubeMap->GetBuffer()->Bind();
 
         glClear(GL_DEPTH_BUFFER_BIT);
-        _pointShadowCubeMap->GetMaterial()->Use();
+        _pointShadowMapMaterial->Use();
 
         for (unsigned int i = 0; i < 6; ++i)
-            _pointShadowCubeMap->GetMaterial()->SetUniform("shadowMatrices[" + std::to_string(i) + "]", glm::value_ptr(shadowTransforms[i]));
+            _pointShadowMapMaterial->SetUniform("shadowMatrices[" + std::to_string(i) + "]", glm::value_ptr(shadowTransforms[i]));
 
-        _pointShadowCubeMap->GetMaterial()->SetUniform("far_plane", _pointShadowCubeMap->GetCamera()->GetFarPlane());
-        _pointShadowCubeMap->GetMaterial()->SetUniform("lightPos", lightPos);
+        _pointShadowMapMaterial->SetUniform("far_plane", _pointShadowCubeMap->GetCamera()->GetFarPlane());
+        _pointShadowMapMaterial->SetUniform("lightPos", lightPos);
 
         renderSceneObjects(scene, TargetCamera, RenderType::SHADOW_MAP);
 
-        _pointShadowCubeMap->GetBuffer()->Bind();
+        _pointShadowCubeMap->GetBuffer()->Unbind();
         ResetViewport();
     }
 
@@ -389,7 +394,10 @@ namespace GLEP{
 
         if(buffer) buffer->Bind();
 
-        if(RenderShadows) renderDirShadowMap(scene);
+        if(RenderShadows){
+            renderDirShadowMap(scene);
+            renderPointShadowMap(scene);
+        }
 
         std::shared_ptr<BufferPassComposer> passComposer = scene->PassComposer;
 

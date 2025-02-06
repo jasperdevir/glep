@@ -83,6 +83,7 @@ out vec4 FragColor;
 #define MAX_SPOT_LIGHTS 50
 
 uniform Framebuffer uShadowMap;
+uniform samplerCube uPointShadowMap;
 
 uniform Material uMaterial;
 
@@ -215,6 +216,22 @@ float calcDirectionalShadow(vec4 positionLightSpace, vec3 normal){
     return shadow;
 }
 
+float calcPointShadow(vec3 lightPos){
+    vec3 fragToLight = v.position - lightPos;
+
+    float closestDepth = texture(uPointShadowMap, fragToLight).r;
+
+    closestDepth *= 100.0f;
+
+    float currentDepth = length(fragToLight);
+
+    float bias = 0.05; 
+
+    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+
+    return shadow;
+}
+
 vec2 parallaxMapping(vec2 texCoords, vec3 viewDir){
     const float numLayers = 10;
     float layerDepth = 1.0 / numLayers;
@@ -287,8 +304,10 @@ void main(){
 
     result += calcDirectionalLight(uDirectionalLight, normal, matDiffuse.rgb, matSpecular);
 
-    float shadow = calcDirectionalShadow(v.lightSpacePosition, normal); 
-    vec3 lighting = (ambient + (1.0 - shadow) * result); 
+    float dirShadow = calcDirectionalShadow(v.lightSpacePosition, normal); 
+    float pointShadow = calcPointShadow(uPointLights[0].position);
+
+    vec3 lighting = (ambient + (1.0 - pointShadow) * result); 
     
     vec4 finalColor = vec4(lighting, matDiffuse.a);
     if(finalColor.a < 0.1f) discard; 
