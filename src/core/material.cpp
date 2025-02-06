@@ -52,14 +52,6 @@ namespace GLEP {
             glEnable(GL_CULL_FACE);
             glCullFace((GLenum)CullFace);
         }
-
-        /*
-            if(!GetUniform<bool>("hasNormalMap"))
-            AddUniform<bool>("hasNormalMap", false);
-
-        if(!GetUniform<bool>("hasDispMap"))
-            AddUniform<bool>("hasDispMap", false);
-        */
         
 
         _shader->Use();
@@ -107,6 +99,10 @@ namespace GLEP {
     
     void Material::SetUniform(const std::string &name, float* value){
         glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, value);
+    }
+
+    void Material::SetUniform(const std::string& name, glm::mat4 value){
+        glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &value[0][0]);
     }
 
     template <>

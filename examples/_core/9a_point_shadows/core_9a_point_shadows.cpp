@@ -89,7 +89,7 @@ int main(){
     castMaterial->CastShadows = true;
 
     std::shared_ptr<Model> cube0 = std::make_shared<Model>(cubeGeometry, castMaterial);
-    cube0->Position = glm::vec3(4.0f, -3.5f, 0.0);
+    cube0->Position = glm::vec3(0.0f, 0.0f, -2.5f);
     scene->Add(cube0);
     
     /* ----------------Add Lights to the scene--------------- */

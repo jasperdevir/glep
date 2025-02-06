@@ -213,10 +213,11 @@ namespace GLEP{
         
     }
 
-    void Renderer::renderMesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> mat, std::shared_ptr<Scene> scene, glm::vec3 cameraPos, glm::mat4 projection, glm::mat4 view, glm::mat4 model, RenderType type){
+    void Renderer::renderMesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> mat, std::shared_ptr<Scene> scene, glm::vec3 cameraPos, glm::mat4 projection, glm::mat4 view, glm::mat4 model, RenderType type){\
         if(type != RenderType::SHADOW_MAP){
             mat->Use();
             
+            mat->SetUniform("model", glm::value_ptr(model));
             mat->SetUniform("projection", glm::value_ptr(projection));
             mat->SetUniform("view", glm::value_ptr(view));
 
@@ -269,10 +270,10 @@ namespace GLEP{
             }
         } else {
             //Override MaterialCull when rendering shadow map
-            glCullFace(GL_BACK);
+            //glCullFace(GL_BACK);
+            mat->SetUniform("model", model);
         }
         
-        mat->SetUniform("model", glm::value_ptr(model));
 
         geo->Draw();
     }
@@ -352,20 +353,21 @@ namespace GLEP{
         shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 0.0,-1.0), glm::vec3(0.0,-1.0, 0.0)));
 
         SetViewport(0, 0, _pointShadowCubeMap->GetWidth(), _pointShadowCubeMap->GetHeight());
-        _pointShadowCubeMap->GetBuffer()->Bind();
+        glBindFramebuffer(GL_FRAMEBUFFER, _pointShadowCubeMap->GetBuffer()->GetBufferID());
 
-        glClear(GL_DEPTH_BUFFER_BIT);
+        Print(PrintCode::INFO, "POINT SHADOW MAP MATERIAL");
         _pointShadowMapMaterial->Use();
 
         for (unsigned int i = 0; i < 6; ++i)
-            _pointShadowMapMaterial->SetUniform("shadowMatrices[" + std::to_string(i) + "]", glm::value_ptr(shadowTransforms[i]));
+            _pointShadowMapMaterial->SetUniform("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 
-        _pointShadowMapMaterial->SetUniform("far_plane", _pointShadowCubeMap->GetCamera()->GetFarPlane());
-        _pointShadowMapMaterial->SetUniform("lightPos", lightPos);
+        _pointShadowMapMaterial->SetUniform("uFarPlane", _pointShadowCubeMap->GetCamera()->GetFarPlane());
+        _pointShadowMapMaterial->SetUniform("uLightPos", lightPos);
 
         renderSceneObjects(scene, TargetCamera, RenderType::SHADOW_MAP);
+        Print(PrintCode::INFO, "-------------------------");
 
-        _pointShadowCubeMap->GetBuffer()->Unbind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         ResetViewport();
     }
 

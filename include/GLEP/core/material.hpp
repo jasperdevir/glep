@@ -227,6 +227,8 @@ namespace GLEP{
             /// @param value Uniform value to set (glm::mat4)
             void SetUniform(const std::string &name, float* value);
 
+            void SetUniform(const std::string& name, glm::mat4 value);
+
             /* Uniform Texture Slot Layout
             TEXTURE
                 0 = DIFFUSE
