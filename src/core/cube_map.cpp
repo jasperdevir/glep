@@ -294,7 +294,7 @@ namespace GLEP{
     ShadowCubeMap::ShadowCubeMap(glm::vec3 position, int bufferSize){
         _camera = std::make_shared<PerspectiveCamera>(-90.0f, 1.0f, 0.01f, 100.0f);
         _camera->Position = position;
-        _framebuffer = std::make_shared<Framebuffer>(glm::vec2((float)bufferSize));
+        _framebuffer = std::make_shared<DepthFramebuffer>(glm::vec2((float)bufferSize));
 
         _width = bufferSize;
         _height = bufferSize;
@@ -316,18 +316,19 @@ namespace GLEP{
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->GetBufferID());
+        _framebuffer->Bind();
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _ID, 0);
         glDrawBuffer(GL_NONE);
         glReadBuffer(GL_NONE);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        _framebuffer->Unbind();
+
     }
 
     std::shared_ptr<Camera> ShadowCubeMap::GetCamera(){
         return _camera;
     }
 
-    std::shared_ptr<Framebuffer> ShadowCubeMap::GetBuffer(){
+    std::shared_ptr<DepthFramebuffer> ShadowCubeMap::GetBuffer(){
         return _framebuffer;
     }
 

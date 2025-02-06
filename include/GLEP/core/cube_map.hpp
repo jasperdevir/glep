@@ -189,7 +189,7 @@ namespace GLEP{
     class ShadowCubeMap : public CubeMap{
         private:
             std::shared_ptr<Camera> _camera;
-            std::shared_ptr<Framebuffer> _framebuffer;
+            std::shared_ptr<DepthFramebuffer> _framebuffer;
 
             void initialize() override;
 
@@ -198,7 +198,7 @@ namespace GLEP{
 
             std::shared_ptr<Camera> GetCamera();
 
-            std::shared_ptr<Framebuffer> GetBuffer();
+            std::shared_ptr<DepthFramebuffer> GetBuffer();
 
             json ToJson() override;
     };

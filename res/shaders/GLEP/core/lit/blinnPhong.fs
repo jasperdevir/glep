@@ -84,6 +84,7 @@ out vec4 FragColor;
 
 uniform Framebuffer uShadowMap;
 uniform samplerCube uPointShadowMap;
+uniform vec3 uPointLightPos;
 
 uniform Material uMaterial;
 
@@ -216,6 +217,7 @@ float calcDirectionalShadow(vec4 positionLightSpace, vec3 normal){
     return shadow;
 }
 
+
 float calcPointShadow(vec3 lightPos){
     vec3 fragToLight = v.position - lightPos;
 
@@ -229,8 +231,11 @@ float calcPointShadow(vec3 lightPos){
 
     float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
 
+    FragColor = vec4(vec3(closestDepth / 100.0f), 1.0f);
+     
     return shadow;
 }
+
 
 vec2 parallaxMapping(vec2 texCoords, vec3 viewDir){
     const float numLayers = 10;
@@ -305,13 +310,13 @@ void main(){
     result += calcDirectionalLight(uDirectionalLight, normal, matDiffuse.rgb, matSpecular);
 
     float dirShadow = calcDirectionalShadow(v.lightSpacePosition, normal); 
-    float pointShadow = calcPointShadow(uPointLights[0].position);
+    float pointShadow = calcPointShadow(uPointLightPos);
 
     vec3 lighting = (ambient + (1.0 - pointShadow) * result); 
     
     vec4 finalColor = vec4(lighting, matDiffuse.a);
     if(finalColor.a < 0.1f) discard; 
 
-    FragColor = finalColor;
+    //FragColor = finalColor;
 
 }

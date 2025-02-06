@@ -81,6 +81,46 @@ namespace GLEP{
             void BindResult();
     };
 
+    class DepthFramebuffer{
+        int _width;
+        int _height;
+
+        unsigned int _framebuffer;
+        unsigned int _depthBuffer;
+
+        void initialize();
+
+    public:
+        DepthFramebuffer(glm::vec2 resolution);
+        ~DepthFramebuffer();
+
+        /// @brief Get the framebuffer ID.
+        /// @return Framebuffer ID
+        unsigned int GetBufferID();
+
+        /// @brief Get the depth buffer ID.
+        /// @return Depth buffer ID
+        unsigned int GetDepthBufferID();
+
+        /// @brief Get the width of the buffer in pixels.
+        /// @return Width
+        int GetWidth();
+
+        /// @brief Get the height of the buffer in pixels.
+        /// @return Height
+        int GetHeight();
+
+
+        /// @brief Bind as the active framebuffer.
+        void Bind();
+
+        /// @brief Unbind as the active framebuffer.
+        void Unbind();
+
+        /// @brief Bind the color and depth buffer to a shader uniform.
+        void BindResult();
+    };
+
 }
 
 #endif //FRAMEBUFFER_HPP

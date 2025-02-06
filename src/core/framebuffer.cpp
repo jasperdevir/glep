@@ -97,5 +97,66 @@ namespace GLEP {
         glActiveTexture(GL_TEXTURE0 + 5);
         glBindTexture(GL_TEXTURE_2D, _depthBuffer);
     }
+
+    DepthFramebuffer::DepthFramebuffer(glm::vec2 resolution){
+        _width = (int)resolution.x;
+        _height = (int)resolution.y;
+
+        initialize();
+    }
+
+    DepthFramebuffer::~DepthFramebuffer(){
+        glDeleteFramebuffers(1, &_framebuffer);
+        glDeleteTextures(1, &_depthBuffer);
+    }
+
+    void DepthFramebuffer::initialize(){
+        glGenFramebuffers(1, &_framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
+
+        glGenTextures(1, &_depthBuffer);
+        glBindTexture(GL_TEXTURE_2D, _depthBuffer);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthBuffer, 0);
+    
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            Print(PrintCode::ERROR, "FRAMEBUFFER", "Framebuffer is not complete.");
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    int DepthFramebuffer::GetWidth(){
+        return _width;
+    }
+
+    int DepthFramebuffer::GetHeight(){
+        return _height;
+    }
+
+    unsigned int DepthFramebuffer::GetBufferID(){
+        return _framebuffer;
+    }
+
+    unsigned int DepthFramebuffer::GetDepthBufferID(){
+        return _depthBuffer;
+    }
+
+    void DepthFramebuffer::Bind(){
+        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
+    }
+
+    void DepthFramebuffer::Unbind(){
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void DepthFramebuffer::BindResult(){
+        glActiveTexture(GL_TEXTURE0 + 5);
+        glBindTexture(GL_TEXTURE_2D, _depthBuffer);
+    }
         
 }

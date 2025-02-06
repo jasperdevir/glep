@@ -225,6 +225,8 @@ namespace GLEP{
                 mat->SetUniform("lightSpaceMatrix", glm::value_ptr(_dirLightSpaceMatrix));
                 mat->SetUniform("uShadowMap", _dirShadowMapBuffer);
                 mat->SetUniform("uPointShadowMap", _pointShadowCubeMap);
+                mat->SetUniform("uPointLightPos", glm::vec3(0.0f));
+                
 
             mat->SetUniform("viewPos", cameraPos);
             mat->SetUniform("time", Time::GetElapsedTimeF());
@@ -273,7 +275,6 @@ namespace GLEP{
             //glCullFace(GL_BACK);
             mat->SetUniform("model", model);
         }
-        
 
         geo->Draw();
     }
@@ -355,7 +356,6 @@ namespace GLEP{
         SetViewport(0, 0, _pointShadowCubeMap->GetWidth(), _pointShadowCubeMap->GetHeight());
         glBindFramebuffer(GL_FRAMEBUFFER, _pointShadowCubeMap->GetBuffer()->GetBufferID());
 
-        Print(PrintCode::INFO, "POINT SHADOW MAP MATERIAL");
         _pointShadowMapMaterial->Use();
 
         for (unsigned int i = 0; i < 6; ++i)
@@ -365,7 +365,6 @@ namespace GLEP{
         _pointShadowMapMaterial->SetUniform("uLightPos", lightPos);
 
         renderSceneObjects(scene, TargetCamera, RenderType::SHADOW_MAP);
-        Print(PrintCode::INFO, "-------------------------");
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         ResetViewport();

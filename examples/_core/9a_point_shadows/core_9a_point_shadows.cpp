@@ -25,6 +25,8 @@ using namespace GLEP;
 const glm::vec2 screenResolution = glm::vec2(1200, 800);
 
 int main(){
+    GL_MAJ_VERSION = 4;
+    GL_MIN_VERSION = 1;
 
     /* -Initialise key objects (Window, Camera, Renderer & Scene)- */
     std::shared_ptr<Window> window = std::make_shared<Window>(
@@ -54,7 +56,7 @@ int main(){
     std::shared_ptr<Texture> interiorTexture = std::make_shared<Texture>(File::GLEP_DEFAULT_TEXTURE);
     /* ---------------Enable shadow renderering-------------- */
     std::shared_ptr<Material> interiorMaterial = std::make_shared<BlinnPhongMaterial>(interiorTexture, Color::WHITE, 16.0f); 
-    interiorMaterial->ReceiveShadows = true;
+    //interiorMaterial->ReceiveShadows = true;
 
     std::shared_ptr<Model> frontWall = std::make_shared<Model>(planeGeometry, interiorMaterial);
     frontWall->Position.z = -5.0f;
@@ -85,7 +87,7 @@ int main(){
     botWall->Rotation = glm::rotate(botWall->Rotation, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     scene->Add(botWall);
 
-    std::shared_ptr<Material> castMaterial = std::make_shared<BlinnPhongMaterial>(Color::GLEP_GREEN, Color::WHITE, 16.0f);
+    std::shared_ptr<Material> castMaterial = std::make_shared<PhongMaterial>(Color::GLEP_GREEN, Color::WHITE, 16.0f);
     castMaterial->CastShadows = true;
 
     std::shared_ptr<Model> cube0 = std::make_shared<Model>(cubeGeometry, castMaterial);
