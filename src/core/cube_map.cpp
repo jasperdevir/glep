@@ -223,7 +223,7 @@ namespace GLEP{
     BakedCubeMap::BakedCubeMap(glm::vec3 position, int bufferSize){
         _camera = std::make_shared<PerspectiveCamera>(-90.0f, 1.0f, 0.01f, 100.0f);
         _camera->Position = position;
-        _framebuffer = std::make_shared<Framebuffer>(glm::vec2((float)bufferSize));
+        _framebuffer = std::make_shared<ColorDepthFramebuffer>(glm::vec2((float)bufferSize));
 
         _width = bufferSize;
         _height = bufferSize;
@@ -274,7 +274,7 @@ namespace GLEP{
 
     glm::vec3 BakedCubeMap::GetPosition(){ return _camera->Position; }
     std::shared_ptr<Camera> BakedCubeMap::GetCamera(){ return _camera; }
-    std::shared_ptr<Framebuffer> BakedCubeMap::GetFramebuffer(){ return _framebuffer; }
+    std::shared_ptr<ColorDepthFramebuffer> BakedCubeMap::GetFramebuffer(){ return _framebuffer; }
 
     json BakedCubeMap::ToJson(){
         json j;

@@ -26,32 +26,22 @@
 namespace GLEP{
 
     class Framebuffer{
-        private:
+        protected:
             unsigned int _framebuffer;
-            unsigned int _colorBuffer;
-            unsigned int _depthBuffer;
 
             int _width;
             int _height;
 
-            void initialize();
+            virtual void initialize() = 0;
 
         public:
             Framebuffer();
             Framebuffer(glm::vec2 resolution);
-            ~Framebuffer();
+            virtual ~Framebuffer();
 
             /// @brief Get the framebuffer ID.
             /// @return Framebuffer ID
             unsigned int GetBufferID();
-
-            /// @brief Get the color buffer ID.
-            /// @return Color buffer ID
-            unsigned int GetColorBufferID();
-
-            /// @brief Get the depth buffer ID.
-            /// @return Depth buffer ID
-            unsigned int GetDepthBufferID();
 
             /// @brief Get the width of the buffer in pixels.
             /// @return Width
@@ -62,23 +52,83 @@ namespace GLEP{
             int GetHeight();
 
 
-            /// @brief Set the depth buffer ID.
-            /// @param depthTexture Depth buffer ID to set
-            void SetDepthBufferID(unsigned int depthBuffer);
-
             /// @brief Set the resolution of the buffer, re-initializing it
             /// @param resolution Resolution to set
             void SetResolution(glm::vec2 resolution);
 
 
             /// @brief Bind as the active framebuffer.
-            void Bind();
+            virtual void Bind() = 0;
 
             /// @brief Unbind as the active framebuffer.
             void Unbind();
 
             /// @brief Bind the color and depth buffer to a shader uniform.
-            void BindResult();
+            virtual void BindResult() = 0;
+    };
+
+    class ColorFramebuffer : public Framebuffer{
+        private:
+            unsigned int _colorBufferID;
+
+            void initialize() override;
+
+        public:
+            ColorFramebuffer();
+            ColorFramebuffer(glm::vec2 resolution);
+            ~ColorFramebuffer();
+
+            unsigned int GetColorBufferID();
+
+            void OverrideColorBuffer(unsigned int colorBuffer);
+
+            void Bind() override;
+
+            void BindResult() override;
+
+    };
+
+    class DepthFramebuffer : public Framebuffer{
+        private:
+            unsigned int _depthBufferID;
+
+            void initialize() override;
+
+        public:
+            DepthFramebuffer();
+            DepthFramebuffer(glm::vec2 resolution);
+            ~DepthFramebuffer();
+
+            unsigned int GetDepthBufferID();
+
+            void OverrideDepthBuffer(unsigned int depthBuffer);
+
+            void Bind() override;
+
+            void BindResult() override;
+    };
+
+    class ColorDepthFramebuffer : public Framebuffer{
+        private:
+            unsigned int _colorBufferID;
+            unsigned int _depthBufferID;
+
+            void initialize() override;
+
+        public:
+            ColorDepthFramebuffer();
+            ColorDepthFramebuffer(glm::vec2 resolution);
+            ~ColorDepthFramebuffer();
+
+            unsigned int GetColorBufferID();
+            unsigned int GetDepthBufferID();
+
+            void OverrideColorBuffer(unsigned int colorBuffer);
+            void OverrideDepthBuffer(unsigned int depthBuffer);
+
+            void Bind() override;
+
+            void BindResult() override;
     };
 
 }

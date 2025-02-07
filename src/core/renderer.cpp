@@ -43,7 +43,7 @@ namespace GLEP{
         glCullFace(GL_FRONT);
         glFrontFace(GL_CCW); 
 
-        _shadowMapBuffer = std::make_shared<Framebuffer>(glm::vec2(1024)); 
+        _shadowMapBuffer = std::make_shared<DepthFramebuffer>(glm::vec2(1024)); 
         _shadowMapCamera = std::make_shared<OrthographicCamera>(10.0f, 1.0f, 0.01f, 10.0f);
 
         std::shared_ptr<Geometry> db_lightGeometry = std::make_shared<CubeGeometry>(0.25f, 0.25f, 0.25f);

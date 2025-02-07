@@ -137,7 +137,7 @@ namespace GLEP{
     class BakedCubeMap : public CubeMap{
         private:
             std::shared_ptr<Camera> _camera;
-            std::shared_ptr<Framebuffer> _framebuffer;
+            std::shared_ptr<ColorDepthFramebuffer> _framebuffer;
 
             void initialize() override;
 
@@ -157,7 +157,7 @@ namespace GLEP{
 
             /// @brief Get framebuffer used to render the cube map textures.
             /// @return Render framebuffer
-            std::shared_ptr<Framebuffer> GetFramebuffer();
+            std::shared_ptr<ColorDepthFramebuffer> GetFramebuffer();
 
 
             /// @brief Set the index of the six possible cube map directions.

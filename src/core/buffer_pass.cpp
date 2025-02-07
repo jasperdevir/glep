@@ -25,11 +25,11 @@ namespace GLEP {
     }
 
     void BufferPass::InitializeBuffer(glm::vec2 resolution){
-        _framebuffer = std::make_shared<Framebuffer>(resolution);
-        _mesh->MaterialData->AddUniform<std::shared_ptr<Framebuffer>>("framebuffer", _framebuffer);
+        _framebuffer = std::make_shared<ColorDepthFramebuffer>(resolution);
+        _mesh->MaterialData->AddUniform<std::shared_ptr<ColorDepthFramebuffer>>("framebuffer", _framebuffer);
     }
 
-    std::shared_ptr<Framebuffer> BufferPass::GetFramebuffer(){ return _framebuffer; }
+    std::shared_ptr<ColorDepthFramebuffer> BufferPass::GetFramebuffer(){ return _framebuffer; }
     std::shared_ptr<Material> BufferPass::GetMaterial(){ return _mesh->MaterialData; }
     std::string BufferPass::GetName(){ return _name; }
 
@@ -256,12 +256,12 @@ namespace GLEP {
 
         if(_fogPass){
             _fogPass->Bind();
-            _fogPass->GetFramebuffer()->SetDepthBufferID(_objectPass->GetFramebuffer()->GetDepthBufferID());
+            _fogPass->GetFramebuffer()->OverrideDepthBuffer(_objectPass->GetFramebuffer()->GetDepthBufferID());
 
             _objectPass->Render();
 
             _renderPass->Bind();
-            _renderPass->GetFramebuffer()->SetDepthBufferID(_objectPass->GetFramebuffer()->GetDepthBufferID());
+            _renderPass->GetFramebuffer()->OverrideDepthBuffer(_objectPass->GetFramebuffer()->GetDepthBufferID());
 
             _skyboxPass->Render();
             _fogPass->Render();
@@ -271,7 +271,7 @@ namespace GLEP {
 
         if(_bufferPasses.size() > 0){
             _bufferPasses[0]->Bind();
-            _bufferPasses[0]->GetFramebuffer()->SetDepthBufferID(_renderPass->GetFramebuffer()->GetDepthBufferID());
+            _bufferPasses[0]->GetFramebuffer()->OverrideDepthBuffer(_renderPass->GetFramebuffer()->GetDepthBufferID());
         }
 
         _renderPass->Render();
@@ -281,7 +281,7 @@ namespace GLEP {
         for(int i = 0; i < _bufferPasses.size(); i++){
             if(i < _bufferPasses.size() - 1){
                 _bufferPasses[i+1]->Bind();
-                _bufferPasses[i+1]->GetFramebuffer()->SetDepthBufferID(_renderPass->GetFramebuffer()->GetDepthBufferID());
+                _bufferPasses[i+1]->GetFramebuffer()->OverrideDepthBuffer(_renderPass->GetFramebuffer()->GetDepthBufferID());
             } 
 
             _bufferPasses[i]->Render();

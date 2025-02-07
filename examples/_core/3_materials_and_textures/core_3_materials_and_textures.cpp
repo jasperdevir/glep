@@ -72,15 +72,15 @@ int main(){
     /* ----------------------Textures------------------------ */
     std::shared_ptr<Texture> defaultTexture = std::make_shared<Texture>(
         File::GLEP_DEFUALT_TEXTURE, // Image file path
-        TextureType::DIFFUSE // Texture Type (Diffuse, Specular, Normal, Height)
+        TextureType::DIFFUSE // Texture Type (Diffuse, Specular, Normal, Displacement)
     );
     std::shared_ptr<Texture> containerATexture = std::make_shared<Texture>(
-        File::DIRECTORY / "examples" / "res" / "textures" / "containerA.jpg", // Image File Path
-        TextureType::DIFFUSE // Texture Type (Diffuse, Specular, Normal, Height)
+        File::DIRECTORY / "examples" / "res" / "textures" / "wood.png", // Image File Path
+        TextureType::DIFFUSE // Texture Type (Diffuse, Specular, Normal, Displacement)
     );
     std::shared_ptr<Texture> containerBTexture = std::make_shared<Texture>(
         File::DIRECTORY / "examples" / "res" / "textures" / "containerB.png", // Image File Path
-        TextureType::DIFFUSE // Texture Type (Diffuse, Specular, Normal, Height)
+        TextureType::DIFFUSE // Texture Type (Diffuse, Specular, Normal, Displacement)
     );
     /* ------------------------------------------------------ */
 

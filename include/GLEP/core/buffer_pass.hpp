@@ -41,7 +41,7 @@ namespace GLEP{
         protected:
             std::string _name = "buffer_pass";
 
-            std::shared_ptr<Framebuffer> _framebuffer;
+            std::shared_ptr<ColorDepthFramebuffer> _framebuffer;
             std::shared_ptr<Mesh> _mesh;
 
         public:
@@ -49,7 +49,7 @@ namespace GLEP{
 
             /// @brief Get the framebuffer of the pass.
             /// @return Framebuffer
-            std::shared_ptr<Framebuffer> GetFramebuffer();
+            std::shared_ptr<ColorDepthFramebuffer> GetFramebuffer();
             
             /// @brief Get the material of the pass.
             /// @return Material
