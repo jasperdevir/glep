@@ -46,6 +46,10 @@ namespace GLEP{
         _shadowMapBuffer = std::make_shared<DepthFramebuffer>(glm::vec2(1024)); 
         _shadowMapCamera = std::make_shared<OrthographicCamera>(10.0f, 1.0f, 0.01f, 10.0f);
 
+        _pointShadowCubeMap = std::make_shared<DepthBakedCubeMap>(glm::vec3(0.0f), 1024);
+        std::shared_ptr<Shader> pointShadowMapShader = std::make_shared<Shader>(File::GLEP_SHADERS_PATH / "pointShadow.vs", File::GLEP_SHADERS_PATH / "pointShadow.gs", File::GLEP_SHADERS_PATH / "pointShadow.fs");
+        _pointShadowMapMaterial = std::make_shared<Material>(pointShadowMapShader);
+
         std::shared_ptr<Geometry> db_lightGeometry = std::make_shared<CubeGeometry>(0.25f, 0.25f, 0.25f);
         std::shared_ptr<Material> db_lightMaterial = std::make_shared<UnlitMaterial>(Color(1.0f));
         _DB_lightMesh = std::make_shared<Mesh>(db_lightGeometry, db_lightMaterial);
@@ -121,8 +125,9 @@ namespace GLEP{
     }
 
     void Renderer::renderSceneObjects(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera, RenderType type){
-        glClearColor(ClearColor.r, ClearColor.g, ClearColor.b, ClearColor.a);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if(type != RenderType::SHADOW_MAP)
+            glClearColor(ClearColor.r, ClearColor.g, ClearColor.b, ClearColor.a);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 projectionMatrix = camera->GetProjectionMatrix();
         glm::mat4 viewMatrix = camera->GetViewMatrix();
@@ -210,61 +215,68 @@ namespace GLEP{
     }
 
     void Renderer::renderMesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> mat, std::shared_ptr<Scene> scene, glm::vec3 cameraPos, glm::mat4 projection, glm::mat4 view, glm::mat4 model, RenderType type){
-        mat->Use();
+        if(type != RenderType::SHADOW_MAP){
+            mat->Use();
+            mat->SetUniform("projection", glm::value_ptr(projection));
+            mat->SetUniform("view", glm::value_ptr(view));
+            mat->SetUniform("model", glm::value_ptr(model));
 
-        //Override MaterialCull when rendering shadow map
-        if(type == RenderType::SHADOW_MAP)
-            glCullFace(GL_BACK);
+            if(RenderShadows && mat->ReceiveShadows)
+                mat->SetUniform("lightSpaceMatrix", glm::value_ptr(_lightSpaceMatrix));
+                mat->SetUniform("uShadowMap", _shadowMapBuffer);
+                mat->SetUniform("uPointShadowMap", _pointShadowCubeMap);
+                mat->SetUniform("uPointShadowMapFar", _pointShadowCubeMap->GetCamera()->GetFarPlane());
 
-        mat->SetUniform("projection", glm::value_ptr(projection));
-        mat->SetUniform("view", glm::value_ptr(view));
-        mat->SetUniform("model", glm::value_ptr(model));
+            mat->SetUniform("viewPos", cameraPos);
+            mat->SetUniform("time", Time::GetElapsedTimeF());
+            mat->SetUniform("deltaTime", Time::GetDeltaTimeF());
 
-        if(RenderShadows && mat->ReceiveShadows)
-            mat->SetUniform("lightSpaceMatrix", glm::value_ptr(_lightSpaceMatrix));
-            mat->SetUniform("uShadowMap", _shadowMapBuffer);
+            if(mat->LightingRequired){
 
-        mat->SetUniform("viewPos", cameraPos);
-        mat->SetUniform("time", Time::GetElapsedTimeF());
-        mat->SetUniform("deltaTime", Time::GetDeltaTimeF());
+                SceneLightData lightData = scene->GetLightData();
+                mat->SetUniform("uAmbientLightSet", lightData.AmbientLight);
+                mat->SetUniform("uDirectionalLightSet", lightData.DirectionalLight);
+                mat->SetUniform("uPointLightsAmt", lightData.PointLightsAmt);
+                mat->SetUniform("uSpotLightsAmt", lightData.SpotLightsAmt);
 
-        if(mat->LightingRequired){
+                int pointIndex = 0;
+                int spotIndex = 0;
 
-            SceneLightData lightData = scene->GetLightData();
-            mat->SetUniform("uAmbientLightSet", lightData.AmbientLight);
-            mat->SetUniform("uDirectionalLightSet", lightData.DirectionalLight);
-            mat->SetUniform("uPointLightsAmt", lightData.PointLightsAmt);
-            mat->SetUniform("uSpotLightsAmt", lightData.SpotLightsAmt);
+                auto dirLight = scene->GetDirectionalLight();
 
-            int pointIndex = 0;
-            int spotIndex = 0;
+                for(int i = 0; i < scene->GetLights().size(); i++){
+                    switch(scene->GetLight(i)->GetType()){
+                        case LightType::AMBIENT:
+                            scene->GetLight(i)->Bind(mat, 0);
+                            break;
+                        
+                        case LightType::DIRECTION:
+                            if(RenderShadows)
+                                mat->SetUniform("uDirectionalLight.position", ShadowMapDistance * -dirLight->Direction);
+                            scene->GetLight(i)->Bind(mat, 0);
+                            break;
 
-            auto dirLight = scene->GetDirectionalLight();
+                        case LightType::POINT:
+                            scene->GetLight(i)->Bind(mat, pointIndex);
+                            pointIndex++;
+                            break;
 
-            for(int i = 0; i < scene->GetLights().size(); i++){
-                switch(scene->GetLight(i)->GetType()){
-                    case LightType::AMBIENT:
-                        scene->GetLight(i)->Bind(mat, 0);
-                        break;
+                        case LightType::SPOT:
+                            scene->GetLight(i)->Bind(mat, spotIndex);
+                            spotIndex++;
+                            break;
+                    }
                     
-                    case LightType::DIRECTION:
-                        if(RenderShadows)
-                            mat->SetUniform("uDirectionalLight.position", ShadowMapDistance * -dirLight->Direction);
-                        scene->GetLight(i)->Bind(mat, 0);
-                        break;
-
-                    case LightType::POINT:
-                        scene->GetLight(i)->Bind(mat, pointIndex);
-                        pointIndex++;
-                        break;
-
-                    case LightType::SPOT:
-                        scene->GetLight(i)->Bind(mat, spotIndex);
-                        spotIndex++;
-                        break;
                 }
-                
             }
+        } else {
+            /*  ???? Point Shadow Map Rendering
+                For some reason setting "uniform mat4 model" in pointShadow.vs only correctly binds if it is
+                set with the uniform name "projection"
+            */
+            mat->SetUniform("projection", glm::value_ptr(model));
+            //Override MaterialCull when rendering shadow map
+            glCullFace(GL_BACK);
         }
         
         geo->Draw();
@@ -330,6 +342,45 @@ namespace GLEP{
 
     }
 
+    void Renderer::renderPointShadowMap(std::shared_ptr<Scene> scene){
+        glClearColor(ClearColor.r, ClearColor.g, ClearColor.b, ClearColor.a);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        std::shared_ptr<PointLight> pointLight = scene->FindItemByType<PointLight>();
+
+        glm::mat4 shadowProj = _pointShadowCubeMap->GetCamera()->GetProjectionMatrix();
+        glm::vec3 lightPos = pointLight->Position;
+
+        std::vector<glm::mat4> shadowTransforms;
+        shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0,-1.0, 0.0), glm::vec3(0.0, 0.0,-1.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 0.0, 1.0), glm::vec3(0.0,-1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 0.0,-1.0), glm::vec3(0.0,-1.0, 0.0)));
+
+        SetViewport(0, 0, _pointShadowCubeMap->GetWidth(), _pointShadowCubeMap->GetHeight());
+        glBindFramebuffer(GL_FRAMEBUFFER, _pointShadowCubeMap->GetFramebuffer()->GetBufferID());
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        _pointShadowMapMaterial->Use();
+
+
+        for (unsigned int i = 0; i < 6; ++i)
+            _pointShadowMapMaterial->SetUniform("shadowMatrices[" + std::to_string(i) + "]", glm::value_ptr(shadowTransforms[i]));
+
+        _pointShadowMapMaterial->SetUniform("far_plane", _pointShadowCubeMap->GetCamera()->GetFarPlane());
+        _pointShadowMapMaterial->SetUniform("lightPos", lightPos);
+
+        _pointShadowCubeMap->Bind();
+
+        renderSceneObjects(scene, TargetCamera, RenderType::SHADOW_MAP);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        ResetViewport();
+    }
+
     void Renderer::updateResolution(const std::shared_ptr<BufferPassComposer>& passComposer){
         if(!TargetWindow) return;
 
@@ -355,7 +406,10 @@ namespace GLEP{
 
         if(buffer) buffer->Bind();
 
-        if(RenderShadows) renderShadowMap(scene);
+        if(RenderShadows) {
+            renderShadowMap(scene);
+            renderPointShadowMap(scene);
+        }
 
         std::shared_ptr<BufferPassComposer> passComposer = scene->PassComposer;
 

@@ -290,4 +290,48 @@ namespace GLEP{
             data["buffer_size"]
         );
     }
+
+    DepthBakedCubeMap::DepthBakedCubeMap(glm::vec3 position, int bufferSize){
+        _width = bufferSize;
+        _height = bufferSize;
+
+        _camera = std::make_shared<PerspectiveCamera>(90.0f, (float)_width / (float)_height, 0.01f, 25.0f);
+        _framebuffer = std::make_shared<DepthFramebuffer>(glm::vec2(bufferSize));
+
+        initialize();
+    }
+
+    void DepthBakedCubeMap::initialize(){
+        glGenTextures(1, &_ID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, _ID);
+
+        for (int i = 0; i < 6; ++i) {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        }
+
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer->GetBufferID());
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _ID, 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+    }
+
+    std::shared_ptr<Camera> DepthBakedCubeMap::GetCamera(){
+        return _camera;
+    }
+
+    std::shared_ptr<DepthFramebuffer> DepthBakedCubeMap::GetFramebuffer(){
+        return _framebuffer;
+    }
+
+    json DepthBakedCubeMap::ToJson(){
+        json j;
+        return j;
+    }
 }

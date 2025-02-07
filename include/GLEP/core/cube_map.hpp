@@ -185,6 +185,27 @@ namespace GLEP{
             /// @return Deserialized BakedCubeMap
             static std::shared_ptr<BakedCubeMap> FromJson(const json& data);
     };
+
+    class DepthBakedCubeMap : public CubeMap{
+        private:
+            std::shared_ptr<Camera> _camera;
+            std::shared_ptr<DepthFramebuffer> _framebuffer;
+
+            void initialize() override;
+
+        public:
+            DepthBakedCubeMap(glm::vec3 position, int bufferSize = 1024);
+
+            /// @brief Get camera used to render the cube map.
+            /// @return Render camera
+            std::shared_ptr<Camera> GetCamera();
+
+            /// @brief Get framebuffer used to render the cube map textures.
+            /// @return Render framebuffer
+            std::shared_ptr<DepthFramebuffer> GetFramebuffer();
+
+            json ToJson() override;
+    };
     
 }
 

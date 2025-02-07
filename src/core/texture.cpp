@@ -30,7 +30,7 @@ namespace GLEP {
         unsigned char *data = stbi_load(_filePath.string().c_str(), &_width, &_height, &_nrChannels, 0);
         if(!data) {
             Print(PrintCode::ERROR, "TEXTURE", "Failed to load texture at: " + _filePath.string() + " -  Loading default texture");
-            _filePath = File::GLEP_DEFUALT_TEXTURE;
+            _filePath = File::GLEP_DEFAULT_TEXTURE;
         }
         
         initialize(data);

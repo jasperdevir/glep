@@ -83,6 +83,17 @@ out vec4 FragColor;
 #define MAX_SPOT_LIGHTS 50
 
 uniform Framebuffer uShadowMap;
+uniform samplerCube uPointShadowMap;
+uniform float uPointShadowMapFar;
+
+vec3 gridSamplingDisk[20] = vec3[]
+(
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
 
 uniform Material uMaterial;
 
@@ -215,6 +226,28 @@ float calcDirectionalShadow(vec4 positionLightSpace, vec3 normal){
     return shadow;
 }
 
+float calcPointShadow(PointLight light){
+    vec3 fragToLight = v.position - light.position;
+    float currentDepth = length(fragToLight);
+
+    float shadow = 0.0;
+    float bias = 0.15;
+    int samples = 20;
+
+    float viewDistance = length(i.viewPos - v.position);
+    float diskRadius = (1.0 + (viewDistance / uPointShadowMapFar)) / 25.0;
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(uPointShadowMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= uPointShadowMapFar;
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(samples);
+
+    return shadow;
+}
+
 vec2 parallaxMapping(vec2 texCoords, vec3 viewDir){
     const float numLayers = 10;
     float layerDepth = 1.0 / numLayers;
@@ -288,7 +321,8 @@ void main(){
     result += calcDirectionalLight(uDirectionalLight, normal, matDiffuse.rgb, matSpecular);
 
     float shadow = calcDirectionalShadow(v.lightSpacePosition, normal); 
-    vec3 lighting = (ambient + (1.0 - shadow) * result); 
+    float pointShadow = calcPointShadow(uPointLights[0]);
+    vec3 lighting = (ambient + (1.0 - pointShadow) * result); 
     
     vec4 finalColor = vec4(lighting, matDiffuse.a);
     if(finalColor.a < 0.1f) discard; 

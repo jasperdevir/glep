@@ -52,7 +52,7 @@ int main(){
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
     std::shared_ptr<Geometry> geometry = std::make_shared<CubeGeometry>(0.5f, 0.5f, 0.5f);
 
-    std::shared_ptr<Texture> texture = std::make_shared<Texture>(File::GLEP_DEFUALT_TEXTURE, TextureType::DIFFUSE);
+    std::shared_ptr<Texture> texture = std::make_shared<Texture>(File::GLEP_DEFAULT_TEXTURE, TextureType::DIFFUSE);
     std::shared_ptr<Material> material = std::make_shared<UnlitMaterial>(texture);
 
     for(int z = 0; z < 4; z++){

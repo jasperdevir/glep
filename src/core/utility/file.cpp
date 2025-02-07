@@ -26,8 +26,9 @@ namespace GLEP {
     const std::filesystem::path File::TEXTURES_PATH = RES_PATH / "textures";
     const std::filesystem::path File::AUDIO_PATH = RES_PATH / "audio";
 
-    const std::filesystem::path File::GLEP_DEFUALT_TEXTURE = TEXTURES_PATH / "GLEP" / "core" / "default.png";
+    const std::filesystem::path File::GLEP_DEFAULT_TEXTURE = TEXTURES_PATH / "GLEP" / "core" / "default.png";
     const std::filesystem::path File::GLEP_DEFAULT_CUBE_MAP = TEXTURES_PATH / "GLEP" / "core" / "cube_maps" / "default.cubemap";
     const std::filesystem::path File::GLEP_SHADERS_PATH = SHADERS_PATH / "GLEP" / "core";
+    const std::filesystem::path File::GLEP_DEFAULT_VERTEX_SHADER = GLEP_SHADERS_PATH / "core" / "default.vs";
      
 };

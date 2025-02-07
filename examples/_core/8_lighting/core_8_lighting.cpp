@@ -67,7 +67,7 @@ int main(){
     /* ------------------------------------------------------ */
 
     std::shared_ptr<Geometry> floorGeometry = std::make_shared<CubeGeometry>(1.0f, 1.0f, 1.0f);
-    std::shared_ptr<Texture> floorTexture = std::make_shared<Texture>(File::GLEP_DEFUALT_TEXTURE);
+    std::shared_ptr<Texture> floorTexture = std::make_shared<Texture>(File::GLEP_DEFAULT_TEXTURE);
     std::shared_ptr<Material> floorMaterial = std::make_shared<PhongMaterial>(
         floorTexture,
         Color::WHITE,

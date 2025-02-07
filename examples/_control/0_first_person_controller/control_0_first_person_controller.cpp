@@ -68,7 +68,7 @@ int main(){
 
     scene->Skybox = std::make_shared<Mesh>(cubeGeometry, skyboxMaterial); 
 
-    std::shared_ptr<Texture> cubeTexture = std::make_shared<Texture>(File::GLEP_DEFUALT_TEXTURE);
+    std::shared_ptr<Texture> cubeTexture = std::make_shared<Texture>(File::GLEP_DEFAULT_TEXTURE);
     std::shared_ptr<Material> cubeMaterial = std::make_shared<UnlitMaterial>(cubeTexture);
 
     std::shared_ptr<Model> cube0 = std::make_shared<Model>(cubeGeometry, cubeMaterial);
