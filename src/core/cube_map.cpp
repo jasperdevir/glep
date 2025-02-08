@@ -330,6 +330,17 @@ namespace GLEP{
         return _framebuffer;
     }
 
+    void DepthBakedCubeMap::BindBuffer(){
+        _framebuffer->Bind();
+    }
+
+    void DepthBakedCubeMap::UnbindBuffer(){
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glBindTexture(GL_TEXTURE_CUBE_MAP, _ID);
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    }
+
     json DepthBakedCubeMap::ToJson(){
         json j;
         return j;

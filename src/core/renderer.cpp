@@ -360,7 +360,8 @@ namespace GLEP{
         shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0, 0.0,-1.0), glm::vec3(0.0,-1.0, 0.0)));
 
         SetViewport(0, 0, _pointShadowCubeMap->GetWidth(), _pointShadowCubeMap->GetHeight());
-        glBindFramebuffer(GL_FRAMEBUFFER, _pointShadowCubeMap->GetFramebuffer()->GetBufferID());
+        _pointShadowCubeMap->BindBuffer();
+        //glBindFramebuffer(GL_FRAMEBUFFER, _pointShadowCubeMap->GetFramebuffer()->GetBufferID());
         glClear(GL_DEPTH_BUFFER_BIT);
 
         _pointShadowMapMaterial->Use();
@@ -376,7 +377,7 @@ namespace GLEP{
 
         renderSceneObjects(scene, TargetCamera, RenderType::SHADOW_MAP);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        _pointShadowCubeMap->UnbindBuffer();
 
         ResetViewport();
     }

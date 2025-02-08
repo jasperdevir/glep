@@ -204,6 +204,9 @@ namespace GLEP{
             /// @return Render framebuffer
             std::shared_ptr<DepthFramebuffer> GetFramebuffer();
 
+            void BindBuffer();
+            void UnbindBuffer();
+
             json ToJson() override;
     };
     
