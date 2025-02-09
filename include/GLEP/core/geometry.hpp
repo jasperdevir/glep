@@ -381,6 +381,41 @@ namespace GLEP{
             static std::shared_ptr<LineGeometry> FromJson(const json& data);
     };
 
+    class IcosphereGeometry : public Geometry {
+        private:
+            float _radius;
+            unsigned int _subdivision;
+
+            void generate();
+
+        public:
+            IcosphereGeometry(float radius, unsigned int subdivision);
+
+            /// @brief Get the generated radius.
+            /// @return Radius
+            float GetRadius();
+
+            /// @brief Get the generated subdivision level.
+            /// @return Subdivision level
+            unsigned int GetSubdivision();
+
+
+            /// @brief Regenerate geometry.
+            /// @param radius Radius of the sphere
+            /// @param subdivision Subdivision level
+            void Regenerate(float radius, unsigned int subdivision);
+
+
+            /// @brief Serialize data to JSON format.
+            /// @return Serailized data 
+            json ToJson() override;
+
+            /// @brief Deserialize data from JSON format.
+            /// @param data IcosphereGeometry data in JSON format
+            /// @return Deserialized IcosphereGeometry
+            static std::shared_ptr<IcosphereGeometry> FromJson(const json& data);
+    };
+
 }
 
 #endif //GEOMETRY_HPP

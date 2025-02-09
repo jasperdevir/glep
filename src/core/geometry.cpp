@@ -712,4 +712,47 @@ namespace GLEP {
             Math::Vec3FromJson(data["end_point"])
         );
     }
+
+    IcosphereGeometry::IcosphereGeometry(float radius, unsigned int subdivision){
+        _radius = radius;
+        _subdivision = subdivision;
+
+        generate();
+        initialize();
+    }
+
+    void IcosphereGeometry::generate(){
+
+    }
+
+    float IcosphereGeometry::GetRadius(){
+        return _radius;
+    }
+
+    unsigned int IcosphereGeometry::GetSubdivision(){
+        return _subdivision;
+    }
+
+    void IcosphereGeometry::Regenerate(float radius, unsigned int subdivision){
+        _radius = radius;
+        _subdivision = subdivision;
+
+        generate();
+        initialize();
+    }
+
+    json IcosphereGeometry::ToJson(){
+        json j;
+        j["radius"] = _radius;
+        j["subdivision"] = _subdivision;
+        return j;
+    }
+
+    std::shared_ptr<IcosphereGeometry> IcosphereGeometry::FromJson(const json& data){
+        return std::make_shared<IcosphereGeometry>(
+            data["radius"],
+            data["subdivision"]
+        );
+    }
+
 }
