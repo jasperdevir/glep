@@ -79,10 +79,10 @@ void InitScene(){
     sponza->Scale = glm::vec3(0.01f);
     scene->Add(sponza);
 
-    std::shared_ptr<ImportGeometry> isosphereGeometry = std::make_shared<ImportGeometry>(File::DIRECTORY / "examples" / "res" / "models"/ "isosphere" / "isosphere.obj");
+    std::shared_ptr<IcosphereGeometry> isosphereGeometry = std::make_shared<IcosphereGeometry>(1.0f, 4);
     std::shared_ptr<Material> isosphereMaterial = std::make_shared<ReflectionMaterial>(std::shared_ptr<CubeMap>(nullptr), Color(0.9f, 0.9f, 1.0f));
     isosphereMaterial->CastShadows = true;
-    std::shared_ptr<ImportGeometryModel> isosphere = std::make_shared<ImportGeometryModel>(isosphereGeometry, isosphereMaterial);
+    std::shared_ptr<Model> isosphere = std::make_shared<Model>(isosphereGeometry, isosphereMaterial);
     isosphere->Position = glm::vec3(-3.0f, 2.0f, 0.3f);
     scene->Add(isosphere);
 

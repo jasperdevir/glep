@@ -719,9 +719,116 @@ namespace GLEP {
 
         generate();
         initialize();
+        CalculateNormals();
+    }
+
+    /* 
+        C++ implementation of Andreas Kahler's "Creating icosphere mesh in code"
+        http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
+    */
+    unsigned int IcosphereGeometry::addVertex(glm::vec3 p){
+        double length = sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+        _vertices.push_back(glm::vec3(p.x / length, p.y / length, p.z / length) * _radius);
+        return _index++;
+    }
+
+    unsigned int IcosphereGeometry::getMiddlePoint(unsigned int p1, unsigned int p2){
+        bool firstIsSmaller = p1 < p2;
+        unsigned int smallerIndex = firstIsSmaller ? p1 : p2;
+        unsigned int greaterIndex = firstIsSmaller ? p2 : p1;
+        unsigned int key = (smallerIndex << 32) + greaterIndex;
+
+        auto it = _middlePointIndexCache.find(key);
+        if (it != _middlePointIndexCache.end())
+        {
+            return it->second;
+        }
+
+        glm::vec3 point1 = _vertices[p1].Position;
+        glm::vec3 point2 = _vertices[p2].Position;
+        glm::vec3 middle = glm::vec3(
+            (point1.x + point2.x) / 2.0f,
+            (point1.y + point2.y) / 2.0f,
+            (point1.z + point2.z) / 2.0f
+        );
+
+        unsigned int i = addVertex(middle); 
+
+        _middlePointIndexCache[key] = i;
+        return i;
     }
 
     void IcosphereGeometry::generate(){
+        float t = (1.0f + sqrt(5.0f)) / 2.0f;
+
+        addVertex(glm::vec3(-1.0f, t, 0.0f));
+        addVertex(glm::vec3(1.0f, t, 0.0f));
+        addVertex(glm::vec3(-1.0f, -t, 0.0f));
+        addVertex(glm::vec3(1.0f, -t, 0.0f));
+
+        addVertex(glm::vec3(0.0f, -1.0f, t));
+        addVertex(glm::vec3(0.0f, 1.0f, t));
+        addVertex(glm::vec3(0.0f, -1.0f, -t));
+        addVertex(glm::vec3(0.0f, 1.0f, -t));
+
+        addVertex(glm::vec3(t, 0, -1.0f));
+        addVertex(glm::vec3(t, 0, 1.0f));
+        addVertex(glm::vec3(-t, 0, -1.0f));
+        addVertex(glm::vec3(-t, 0, 1.0f));
+
+        _indices = {
+            0, 11, 5,
+            0, 5, 1,
+            0, 1, 7,
+            0, 7, 10,
+            0, 10, 11,
+
+            1, 5, 9,
+            5, 11, 4,
+            11, 10, 2,
+            10, 7, 6,
+            7, 1, 8,
+
+            3, 9, 4,
+            3, 4, 2,
+            3, 2, 6,
+            3, 6, 8,
+            3, 8, 9,
+
+            4, 9, 5,
+            2, 4, 11,
+            6, 2, 10,
+            8, 6, 7,
+            9, 8, 1
+        };
+
+        for (int i = 0; i < _subdivision; i++)
+        {
+            std::vector<unsigned int> subIndices;
+            for (int j = 0; j < _indices.size(); j += 3)
+            {
+                unsigned int a = getMiddlePoint(_indices[j], _indices[j + 1]);
+                unsigned int b = getMiddlePoint(_indices[j + 1], _indices[j + 2]);
+                unsigned int c = getMiddlePoint(_indices[j + 2], _indices[j]);
+
+                subIndices.push_back(_indices[j]);
+                subIndices.push_back(a);
+                subIndices.push_back(c);
+
+                subIndices.push_back(_indices[j + 1]);
+                subIndices.push_back(b);
+                subIndices.push_back(a);
+
+                subIndices.push_back(_indices[j + 2]);
+                subIndices.push_back(c);
+                subIndices.push_back(b);
+
+                subIndices.push_back(a);
+                subIndices.push_back(b);
+                subIndices.push_back(c);
+            }
+            _indices = subIndices;
+        }
 
     }
 
@@ -737,8 +844,14 @@ namespace GLEP {
         _radius = radius;
         _subdivision = subdivision;
 
+        _vertices.clear();
+        _indices.clear();
+        _index = 0;
+        _middlePointIndexCache.clear();
+
         generate();
         initialize();
+        CalculateNormals();
     }
 
     json IcosphereGeometry::ToJson(){
