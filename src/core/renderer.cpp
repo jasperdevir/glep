@@ -50,6 +50,12 @@ namespace GLEP{
         std::shared_ptr<Material> db_lightMaterial = std::make_shared<UnlitMaterial>(Color(1.0f));
         _DB_lightMesh = std::make_shared<Mesh>(db_lightGeometry, db_lightMaterial);
 
+        std::shared_ptr<Geometry> db_lightAttenuationGeometry = std::make_shared<IcosphereGeometry>(1.0f, 1);
+        std::shared_ptr<Material> db_lightAttenuationMaterial = std::make_shared<UnlitMaterial>(Color::WHITE);
+        db_lightAttenuationMaterial->Wireframe = true;
+        db_lightAttenuationMaterial->CullFace = MaterialCull::NONE;
+        _DB_lightAttenuationMesh = std::make_shared<Mesh>(db_lightAttenuationGeometry, db_lightAttenuationMaterial);
+
         std::shared_ptr<Geometry> db_normalDirGeometry = std::make_shared<LineGeometry>(glm::vec3(0.0f), glm::vec3(1.0f));
         std::shared_ptr<Material> db_normalDirMaterial = std::make_shared<UnlitMaterial>(Color(1.0f));
         _DB_normalDirMesh = std::make_shared<Mesh>(db_normalDirGeometry, db_normalDirMaterial);
@@ -162,6 +168,11 @@ namespace GLEP{
                         if(DB_DrawLightPositions){
                             _DB_lightMesh->MaterialData->SetUniformValue<Color>("diffuseColor", point->LightColor);
                             renderMesh(_DB_lightMesh->GeometryData, _DB_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
+                        }
+                        if(DB_DrawLightAttenuation){
+                            float attenuationDistance = (2.0f - point->Constant) / point->Linear;
+                            glm::mat4 attenuationModel = glm::scale(modelMatrix, glm::vec3(attenuationDistance));
+                            renderMesh(_DB_lightAttenuationMesh->GeometryData, _DB_lightAttenuationMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, attenuationModel, RenderType::NORMAL);
                         }
                     }  
                     break;

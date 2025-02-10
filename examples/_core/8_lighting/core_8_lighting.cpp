@@ -42,6 +42,7 @@ int main(){
     camera->Rotation = glm::quat(glm::lookAt(camera->Position, glm::vec3(0.0f), Camera::UP));
 
     std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>(window, camera);
+    renderer->DebugRenderMode = true;
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
     /* ------------------------------------------------------ */

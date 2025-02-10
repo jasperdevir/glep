@@ -61,6 +61,7 @@ namespace GLEP {
             glm::mat4 _lightSpaceMatrix = glm::mat4(1.0f);
 
             std::shared_ptr<Mesh> _DB_lightMesh;
+            std::shared_ptr<Mesh> _DB_lightAttenuationMesh;
             std::shared_ptr<Mesh> _DB_normalDirMesh;
 
             void initializeDefaults();
@@ -88,6 +89,7 @@ namespace GLEP {
             bool DebugRenderMode = false;
             bool DB_OverrideMaterialDebugMode = false;
             bool DB_DrawLightPositions = true;
+            bool DB_DrawLightAttenuation = true;
             bool DB_DrawLightDirections = true;
             float DB_LightDirectionDistance = 2.0f;
             bool DB_DrawVertexNormals = false;
