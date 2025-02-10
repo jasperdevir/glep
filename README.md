@@ -156,10 +156,12 @@ source->Play();
 
 ## Goals
 ### Short-term
-- Light Helper Classes
-- Point Shadow Maps (In Progress)
-- Normal Map Support (Implemented - Needs Testing)
-- Height Map Support (Implemented - Needs Testing)
+- Debugging Render Mode (In Progress)
+- Point Shadow Maps (Complete)
+- Normal Map Support (Complete)
+- Height Map Support (Complete)
+- Bloom
+- Screen-Space Ambient Occlusion
 - Reflection Map Support
 ### Long-term
 - Linux Support
