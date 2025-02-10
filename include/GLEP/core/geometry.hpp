@@ -386,8 +386,8 @@ namespace GLEP{
             float _radius;
             unsigned int _subdivision;
 
-            unsigned int _index;
-            std::unordered_map<unsigned int, unsigned int> _middlePointIndexCache;
+            unsigned int _index = 0;
+            std::unordered_map<uint64_t, unsigned int> _middlePointIndexCache;
 
             unsigned int getMiddlePoint(unsigned int p1, unsigned int p2);
             unsigned int addVertex(glm::vec3 p);

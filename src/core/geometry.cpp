@@ -100,11 +100,14 @@ namespace GLEP {
     }
 
     void Geometry::CalculateNormals(){
-        //NORMALS
         for (int i = 0; i < _indices.size(); i += 3) {
+
             unsigned int index0 = _indices[i];
             unsigned int index1 = _indices[i + 1];
             unsigned int index2 = _indices[i + 2];
+
+            if(index2 >= _indices.size())
+                break;
 
             glm::vec3 pos0 = _vertices[index0].Position;
             glm::vec3 pos1 = _vertices[index1].Position;
@@ -451,8 +454,6 @@ namespace GLEP {
             vertex.TexCoord = glm::vec2(vertex.Position.x / _width + 0.5f, 1.0f - (vertex.Position.z / _depth + 0.5f));
             _vertices.push_back(vertex);
         }
-
-        //CalculateNormals();
         
     }
 
@@ -718,8 +719,8 @@ namespace GLEP {
         _subdivision = subdivision;
 
         generate();
-        initialize();
         CalculateNormals();
+        initialize();
     }
 
     /* 
@@ -734,9 +735,9 @@ namespace GLEP {
 
     unsigned int IcosphereGeometry::getMiddlePoint(unsigned int p1, unsigned int p2){
         bool firstIsSmaller = p1 < p2;
-        unsigned int smallerIndex = firstIsSmaller ? p1 : p2;
-        unsigned int greaterIndex = firstIsSmaller ? p2 : p1;
-        unsigned int key = (smallerIndex << 32) + greaterIndex;
+        uint64_t smallerIndex = firstIsSmaller ? p1 : p2;
+        uint64_t greaterIndex = firstIsSmaller ? p2 : p1;
+        uint64_t key = (smallerIndex << 32) | greaterIndex;
 
         auto it = _middlePointIndexCache.find(key);
         if (it != _middlePointIndexCache.end())
@@ -754,7 +755,7 @@ namespace GLEP {
 
         unsigned int i = addVertex(middle); 
 
-        _middlePointIndexCache[key] = i;
+        _middlePointIndexCache.insert({key, i});
         return i;
     }
 
@@ -802,7 +803,7 @@ namespace GLEP {
             9, 8, 1
         };
 
-        for (int i = 0; i < _subdivision; i++)
+        for (int i = 0; i < (int)_subdivision; i++)
         {
             std::vector<unsigned int> subIndices;
             for (int j = 0; j < _indices.size(); j += 3)
