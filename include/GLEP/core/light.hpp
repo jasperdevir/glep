@@ -103,7 +103,7 @@ namespace GLEP {
             float Linear;
             float Quadratic;
 
-            PointLight(glm::vec3 position, Color color, float intensity, float constant, float linear, float quadratic);
+            PointLight(glm::vec3 position, Color color, float intensity, float linear = 0.1f, float quadratic = 0.032f);
 
 
             /// @brief Bind the light data to a specifed material's shader uniforms.
@@ -158,8 +158,7 @@ namespace GLEP {
             float Linear;
             float Quadratic;
 
-            SpotLight(glm::vec3 position, glm::vec3 direction, Color lightColor, float intensity, float innerCutOff, float outerCutOff, float constant, float linear, float quadratic);
-
+            SpotLight(glm::vec3 position, glm::vec3 direction, Color lightColor, float intensity, float innerCutOff, float outerCutOff, float linear = 0.1f, float quadratic = 0.032f);
 
             /// @brief Bind the light data to a specifed material's shader uniforms.
             /// @param material Target material

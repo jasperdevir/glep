@@ -83,10 +83,10 @@ namespace GLEP {
         );
     }
 
-    PointLight::PointLight(glm::vec3 position, Color lightColor, float intensity, float constant, float linear, float quadratic)
+    PointLight::PointLight(glm::vec3 position, Color lightColor, float intensity, float linear, float quadratic)
     : Light(LightType::POINT, lightColor, intensity) {
         Position = position;
-        Constant = constant;
+        Constant = 1.0f;
         Linear = linear;
         Quadratic = quadratic;
     }
@@ -107,7 +107,6 @@ namespace GLEP {
         j["light_color"] = LightColor.ToJson();
         j["intensity"] = Intensity;
         j["position"] = Math::ToJson(Position);
-        j["constant"] = Constant;
         j["linear"] = Linear;
         j["quadratic"] = Quadratic;
 
@@ -119,7 +118,6 @@ namespace GLEP {
             Math::Vec3FromJson(data["position"]),
             Color::FromJson(data["light_color"]), 
             data["intensity"], 
-            data["constant"], 
             data["linear"], 
             data["quadratic"]
         );
@@ -155,13 +153,13 @@ namespace GLEP {
         );
     }
 
-    SpotLight::SpotLight(glm::vec3 position, glm::vec3 direction, Color lightColor, float intensity, float innerCutOff, float outerCutOff, float constant, float linear, float quadratic)
+    SpotLight::SpotLight(glm::vec3 position, glm::vec3 direction, Color lightColor, float intensity, float innerCutOff, float outerCutOff, float linear, float quadratic)
     : Light(LightType::SPOT, lightColor, intensity) {
         Position = position;
         Direction = direction;
         InnerCutOff = glm::cos(glm::radians(innerCutOff));
         OuterCutOff = glm::cos(glm::radians(outerCutOff));
-        Constant = constant;
+        Constant = 1.0f;
         Linear = linear;
         Quadratic = quadratic;
     }
@@ -203,7 +201,6 @@ namespace GLEP {
             data["intensity"],
             data["inner_cut_off"],
             data["outer_cut_off"],
-            data["constant"], 
             data["linear"], 
             data["quatratic"]
         );

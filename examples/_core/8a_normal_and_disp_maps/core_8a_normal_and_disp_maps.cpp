@@ -113,9 +113,9 @@ int main(){
 
     std::shared_ptr<AmbientLight> ambientLight = std::make_shared<AmbientLight>(Color(1.0f), 0.2f);
     scene->Add(ambientLight);
-    std::shared_ptr<PointLight> pointLight0 = std::make_shared<PointLight>(glm::vec3(-1.0f, 1.0f, 2.0f), Color(1.0f), 0.5f, 1.0f, 0.09f, 0.032f);
+    std::shared_ptr<PointLight> pointLight0 = std::make_shared<PointLight>(glm::vec3(-1.0f, 1.0f, 2.0f), Color(1.0f), 0.5f);
     scene->Add(pointLight0);
-    std::shared_ptr<PointLight> pointLight1 = std::make_shared<PointLight>(glm::vec3(1.0f, 1.0f, 2.0f), Color(1.0f), 0.5f, 1.0f, 0.09f, 0.032f);
+    std::shared_ptr<PointLight> pointLight1 = std::make_shared<PointLight>(glm::vec3(1.0f, 1.0f, 2.0f), Color(1.0f), 0.5f);
     scene->Add(pointLight1);    
     
     /* ---------------------Render Loop---------------------- */
