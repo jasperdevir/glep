@@ -42,6 +42,9 @@ namespace GLEP{
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
         glFrontFace(GL_CCW); 
+        
+        _gBuffer = std::make_shared<GBuffer>(TargetWindow->GetResolution());
+        _gBufferMaterial = std::make_shared<Material>(File::GLEP_SHADERS_PATH / "default.vs", File::GLEP_SHADERS_PATH / "gBuffer.fs");
 
         _shadowMapBuffer = std::make_shared<DepthFramebuffer>(glm::vec2(1024)); 
         _shadowMapCamera = std::make_shared<OrthographicCamera>(10.0f, 1.0f, 0.01f, 10.0f);
@@ -167,12 +170,12 @@ namespace GLEP{
                         glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), point->Position);
                         if(DB_DrawLightPositions){
                             _DB_lightMesh->MaterialData->SetUniformValue<Color>("diffuseColor", point->LightColor);
-                            renderMesh(_DB_lightMesh->GeometryData, _DB_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
+                            renderMesh(_DB_lightMesh->GeometryData, _DB_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::G_BUFFER);
                         }
                         if(DB_DrawLightAttenuation){
                             float attenuationDistance = (2.0f - point->Constant) / point->Linear;
                             glm::mat4 attenuationModel = glm::scale(modelMatrix, glm::vec3(attenuationDistance));
-                            renderMesh(_DB_lightAttenuationMesh->GeometryData, _DB_lightAttenuationMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, attenuationModel, RenderType::NORMAL);
+                            renderMesh(_DB_lightAttenuationMesh->GeometryData, _DB_lightAttenuationMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, attenuationModel, RenderType::G_BUFFER);
                         }
                     }  
                     break;
@@ -184,13 +187,13 @@ namespace GLEP{
                         glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), spot->Position);
                         if(DB_DrawLightPositions){
                             _DB_lightMesh->MaterialData->SetUniformValue<Color>("diffuseColor", spot->LightColor);
-                            renderMesh(_DB_lightMesh->GeometryData, _DB_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::NORMAL);
+                            renderMesh(_DB_lightMesh->GeometryData, _DB_lightMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, modelMatrix, RenderType::G_BUFFER);
                         }
 
                         if(DB_DrawLightDirections){
                             glm::vec3 direction = glm::normalize(spot->Direction);
                             db_lineDirGeometry->Regenerate(spot->Position, spot->Position + direction * DB_LightDirectionDistance);
-                            renderMesh(_DB_normalDirMesh->GeometryData, _DB_normalDirMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, glm::mat4(1.0f), RenderType::NORMAL);
+                            renderMesh(_DB_normalDirMesh->GeometryData, _DB_normalDirMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, glm::mat4(1.0f), RenderType::G_BUFFER);
                         }
                     }
                     break;  
@@ -212,7 +215,7 @@ namespace GLEP{
                     for(Vertex vertex : mesh->GeometryData->GetVertices()){
                         glm::vec3 normal = glm::normalize(vertex.Normal);
                         db_lineDirGeometry->Regenerate(vertex.Position, vertex.Position + normal * DB_VertexNormalDistance);
-                        renderMesh(_DB_normalDirMesh->GeometryData, _DB_normalDirMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, model->GetModelMatrix(), RenderType::NORMAL);
+                        renderMesh(_DB_normalDirMesh->GeometryData, _DB_normalDirMesh->MaterialData, scene, cameraPos, projectionMatrix, viewMatrix, model->GetModelMatrix(), RenderType::G_BUFFER);
                     }
                 }
             }
@@ -221,62 +224,67 @@ namespace GLEP{
     }
 
     void Renderer::renderMesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> mat, std::shared_ptr<Scene> scene, glm::vec3 cameraPos, glm::mat4 projection, glm::mat4 view, glm::mat4 model, RenderType type){
-        mat->Use();
+        
+        if(type != RenderType::G_BUFFER || type != RenderType::SHADOW_MAP){
+            mat->Use();
 
-        //Override MaterialCull when rendering shadow map
-        if(type == RenderType::SHADOW_MAP)
+            mat->SetUniform("projection", glm::value_ptr(projection));
+            mat->SetUniform("view", glm::value_ptr(view));
+            mat->SetUniform("model", glm::value_ptr(model));
+
+            if(RenderShadows && mat->ReceiveShadows)
+                mat->SetUniform("lightSpaceMatrix", glm::value_ptr(_lightSpaceMatrix));
+                mat->SetUniform("uShadowMap", _shadowMapBuffer);
+
+            if(mat->LightingRequired){
+
+                SceneLightData lightData = scene->GetLightData();
+                mat->SetUniform("uAmbientLightSet", lightData.AmbientLight);
+                mat->SetUniform("uDirectionalLightSet", lightData.DirectionalLight);
+                mat->SetUniform("uPointLightsAmt", lightData.PointLightsAmt);
+                mat->SetUniform("uSpotLightsAmt", lightData.SpotLightsAmt);
+
+                int pointIndex = 0;
+                int spotIndex = 0;
+
+                auto dirLight = scene->GetDirectionalLight();
+
+                for(int i = 0; i < scene->GetLights().size(); i++){
+                    switch(scene->GetLight(i)->GetType()){
+                        case LightType::AMBIENT:
+                            scene->GetLight(i)->Bind(mat, 0);
+                            break;
+                        
+                        case LightType::DIRECTION:
+                            if(RenderShadows)
+                                mat->SetUniform("uDirectionalLight.position", ShadowMapDistance * -dirLight->Direction);
+                            scene->GetLight(i)->Bind(mat, 0);
+                            break;
+
+                        case LightType::POINT:
+                            scene->GetLight(i)->Bind(mat, pointIndex);
+                            pointIndex++;
+                            break;
+
+                        case LightType::SPOT:
+                            scene->GetLight(i)->Bind(mat, spotIndex);
+                            spotIndex++;
+                            break;
+                    }
+                    
+                }
+            }
+        } else if (type == RenderType::SHADOW_MAP){
             glCullFace(GL_BACK);
+            mat->SetUniform("model", glm::value_ptr(model));
+        } 
 
-        mat->SetUniform("projection", glm::value_ptr(projection));
-        mat->SetUniform("view", glm::value_ptr(view));
         mat->SetUniform("model", glm::value_ptr(model));
-
-        if(RenderShadows && mat->ReceiveShadows)
-            mat->SetUniform("lightSpaceMatrix", glm::value_ptr(_lightSpaceMatrix));
-            mat->SetUniform("uShadowMap", _shadowMapBuffer);
 
         mat->SetUniform("viewPos", cameraPos);
         mat->SetUniform("time", Time::GetElapsedTimeF());
         mat->SetUniform("deltaTime", Time::GetDeltaTimeF());
-
-        if(mat->LightingRequired){
-
-            SceneLightData lightData = scene->GetLightData();
-            mat->SetUniform("uAmbientLightSet", lightData.AmbientLight);
-            mat->SetUniform("uDirectionalLightSet", lightData.DirectionalLight);
-            mat->SetUniform("uPointLightsAmt", lightData.PointLightsAmt);
-            mat->SetUniform("uSpotLightsAmt", lightData.SpotLightsAmt);
-
-            int pointIndex = 0;
-            int spotIndex = 0;
-
-            auto dirLight = scene->GetDirectionalLight();
-
-            for(int i = 0; i < scene->GetLights().size(); i++){
-                switch(scene->GetLight(i)->GetType()){
-                    case LightType::AMBIENT:
-                        scene->GetLight(i)->Bind(mat, 0);
-                        break;
-                    
-                    case LightType::DIRECTION:
-                        if(RenderShadows)
-                            mat->SetUniform("uDirectionalLight.position", ShadowMapDistance * -dirLight->Direction);
-                        scene->GetLight(i)->Bind(mat, 0);
-                        break;
-
-                    case LightType::POINT:
-                        scene->GetLight(i)->Bind(mat, pointIndex);
-                        pointIndex++;
-                        break;
-
-                    case LightType::SPOT:
-                        scene->GetLight(i)->Bind(mat, spotIndex);
-                        spotIndex++;
-                        break;
-                }
-                
-            }
-        }
+            
         
         geo->Draw();
     }
@@ -364,7 +372,7 @@ namespace GLEP{
         TargetCamera->UpdateTransformVectors();
         scene->UpdateObjects();
 
-        if(buffer) buffer->Bind();
+        //if(buffer) buffer->Bind();
 
         if(RenderShadows) renderShadowMap(scene);
 
@@ -385,10 +393,15 @@ namespace GLEP{
             ImGui::NewFrame();
         }
 
+        _gBuffer->Bind();
 
-        renderSceneObjects(scene, TargetCamera);
+        renderSceneObjects(scene, TargetCamera, RenderType::G_BUFFER);
         if(DebugRenderMode)
             renderDebugMode(scene, TargetCamera);
+
+        _gBuffer->Unbind();
+
+        renderSceneObjects(scene, TargetCamera, RenderType::LIGHTING);
 
         if(passComposer)
             passComposer->PreSkybox();

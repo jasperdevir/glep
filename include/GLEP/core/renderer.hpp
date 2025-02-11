@@ -48,13 +48,17 @@ namespace GLEP {
     class Renderer{
         protected:
             enum class RenderType{
-                NORMAL,
+                G_BUFFER,
+                LIGHTING,
                 BAKE,
                 SHADOW_MAP
             };
 
             bool _isGuiInitalized = false;
             bool _isGuiShutdown = false;
+
+            std::shared_ptr<GBuffer> _gBuffer;
+            std::shared_ptr<Material> _gBufferMaterial;
 
             std::shared_ptr<Framebuffer> _shadowMapBuffer;
             std::shared_ptr<Camera> _shadowMapCamera;
@@ -69,7 +73,7 @@ namespace GLEP {
 
             void renderSkybox(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera, bool depthTest = true);
             void renderShadowMap(std::shared_ptr<Scene> scene);
-            void renderSceneObjects(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera, RenderType type = RenderType::NORMAL);
+            void renderSceneObjects(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera, RenderType type = RenderType::G_BUFFER);
             void renderDebugMode(std::shared_ptr<Scene> scene, std::shared_ptr<Camera> camera);
             void renderMesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> mat, std::shared_ptr<Scene> scene, glm::vec3 cameraPos, glm::mat4 projection, glm::mat4 view, glm::mat4 model, RenderType type);
 

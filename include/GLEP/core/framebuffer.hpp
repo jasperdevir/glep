@@ -131,6 +131,38 @@ namespace GLEP{
             void BindResult() override;
     };
 
+    class GBuffer : public Framebuffer{
+        private:
+            unsigned int _positionBufferID;
+            unsigned int _normalBufferID;
+            unsigned int _diffuseBufferID;
+            unsigned int _specularBufferID;
+
+            void initialize() override;
+
+        public:
+            GBuffer();
+            GBuffer(glm::vec2 resolution);
+            ~GBuffer();
+
+            unsigned int GetPositionBufferID();
+
+            unsigned int GetNormalBufferID();
+
+            unsigned int GetDiffuseBufferID();
+
+            unsigned int GetSpecularBufferID();
+
+            void OverridePositionBufferID(unsigned int positionBuffer);
+            void OverrideNormalBufferID(unsigned int normalBuffer);
+            void OverrideDiffuseBufferID(unsigned int diffuseBuffer);
+            void OverrideSpecularBufferID(unsigned int specularBuffer);
+
+            void Bind() override;
+
+            void BindResult() override;
+    }
+
 }
 
 #endif //FRAMEBUFFER_HPP

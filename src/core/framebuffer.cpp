@@ -216,5 +216,112 @@ namespace GLEP {
         glActiveTexture(GL_TEXTURE0 + 5);
         glBindTexture(GL_TEXTURE_2D, _depthBufferID);
     }
+
+    GBuffer::GBuffer(){}
+
+    GBuffer::GBuffer(glm::vec2 resolution)
+    : Framebuffer(resolution){
+        initialize();
+    }
+
+    void GBuffer::initialize(){
+        glGenFramebuffers(1, &_framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
+        
+        // POSITION
+        glGenTextures(1, &_positionBufferID);
+        glBindTexture(GL_TEXTURE_2D, _positionBufferID);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _width, _height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _positionBufferID, 0);
+
+        // NORMAL
+        glGenTextures(1, &_normalBufferID);
+        glBindTexture(GL_TEXTURE_2D, _normalBufferID);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _width, _height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, _normalBufferID, 0);
+
+        // DIFFUSE
+        glGenTextures(1, &_diffuseBufferID);
+        glBindTexture(GL_TEXTURE_2D, _diffuseBufferID);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, _diffuseBufferID, 0);
+
+        // SPECULAR
+        glGenTextures(1, &_specularBufferID);
+        glBindTexture(GL_TEXTURE_2D, _specularBufferID);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _width, _height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, _specularBufferID, 0);
+
+
+        unsigned int attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+        glDrawBuffers(4, attachments);
+    }
+
+    unsigned int GBuffer::GetPositionBufferID(){
+        return _positionBufferID;
+    }
+
+    unsigned int GBuffer::GetNormalBufferID(){
+        return _normalBufferID;
+    }
+
+    unsigned int GBuffer::GetDiffuseBufferID(){
+        return _diffuseBufferID;
+    }
+
+    unsigned int GBuffer::GetSpecularBufferID(){
+        return _specularBufferID;
+    }
+
+    void GBuffer::OverridePositionBufferID(unsigned int positionBuffer){
+        _positionBufferID = positionBuffer;
+    }
+
+    void GBuffer::OverrideNormalBufferID(unsigned int normalBuffer){
+        _normalBufferID = normalBuffer;
+    }
+
+    void GBuffer::OverrideDiffuseBufferID(unsigned int diffuseBuffer){
+        _diffuseBufferID = diffuseBuffer;
+    }
+
+    void GBuffer::OverrideSpecularBufferID(unsigned int specularBuffer){
+        _specularBufferID = specularBuffer;
+    }
+    
+    void GBuffer::Bind(){
+        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
+    }
+
+    void GBuffer::BindResult(){
+        glActiveTexture(GL_TEXTURE0 + 4);
+        glBindTexture(GL_TEXTURE_2D, _positionBufferID);
+
+        glActiveTexture(GL_TEXTURE0 + 5);
+        glBindTexture(GL_TEXTURE_2D, _normalBufferID);
+
+        glActiveTexture(GL_TEXTURE0 + 6);
+        glBindTexture(GL_TEXTURE_2D, _diffuseBufferID);
+
+        glActiveTexture(GL_TEXTURE0 + 7);
+        glBindTexture(GL_TEXTURE_2D, _specularBufferID);
+    }
+
         
 }
