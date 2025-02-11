@@ -181,6 +181,10 @@ namespace GLEP{
             /// @brief Bind this material's shader and it's assigned uniforms.
             void Use();
 
+            /// @brief Bind this material's uniforms but not it's shader
+            /// @param The material to bind the uniforms to
+            void UseData(Material* material);
+
 
             /// @brief Get the ID of a uniforms location based on its name.
             /// @param name Uniform name

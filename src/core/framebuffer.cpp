@@ -89,7 +89,7 @@ namespace GLEP {
     }
 
     void ColorFramebuffer::BindResult(){
-        glActiveTexture(GL_TEXTURE0 + 4);
+        glActiveTexture(GL_TEXTURE0 + 5);
         glBindTexture(GL_TEXTURE_2D, _colorBufferID);
     }
 
@@ -210,10 +210,10 @@ namespace GLEP {
     }
 
     void ColorDepthFramebuffer::BindResult(){
-        glActiveTexture(GL_TEXTURE0 + 4);
+        glActiveTexture(GL_TEXTURE0 + 5);
         glBindTexture(GL_TEXTURE_2D, _colorBufferID);
 
-        glActiveTexture(GL_TEXTURE0 + 5);
+        glActiveTexture(GL_TEXTURE0 + 6);
         glBindTexture(GL_TEXTURE_2D, _depthBufferID);
     }
 
@@ -222,6 +222,14 @@ namespace GLEP {
     GBuffer::GBuffer(glm::vec2 resolution)
     : Framebuffer(resolution){
         initialize();
+    }
+
+    GBuffer::~GBuffer(){
+        glDeleteTextures(1, &_positionBufferID);
+        glDeleteTextures(1, &_normalBufferID);
+        glDeleteTextures(1, &_diffuseBufferID);
+        glDeleteTextures(1, &_specularBufferID);
+        glDeleteRenderbuffers(1, &_renderBufferDepthID);
     }
 
     void GBuffer::initialize(){
@@ -268,9 +276,21 @@ namespace GLEP {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, _specularBufferID, 0);
 
-
         unsigned int attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
         glDrawBuffers(4, attachments);
+
+        glGenRenderbuffers(1, &_renderBufferDepthID);
+        glBindRenderbuffer(GL_RENDERBUFFER, _renderBufferDepthID);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _width, _height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _renderBufferDepthID);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            std::cout << "Framebuffer not complete!" << std::endl;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+        
     }
 
     unsigned int GBuffer::GetPositionBufferID(){
@@ -310,16 +330,16 @@ namespace GLEP {
     }
 
     void GBuffer::BindResult(){
-        glActiveTexture(GL_TEXTURE0 + 4);
+        glActiveTexture(GL_TEXTURE0 + 7);
         glBindTexture(GL_TEXTURE_2D, _positionBufferID);
 
-        glActiveTexture(GL_TEXTURE0 + 5);
+        glActiveTexture(GL_TEXTURE0 + 8);
         glBindTexture(GL_TEXTURE_2D, _normalBufferID);
 
-        glActiveTexture(GL_TEXTURE0 + 6);
+        glActiveTexture(GL_TEXTURE0 + 9);
         glBindTexture(GL_TEXTURE_2D, _diffuseBufferID);
 
-        glActiveTexture(GL_TEXTURE0 + 7);
+        glActiveTexture(GL_TEXTURE0 + 10);
         glBindTexture(GL_TEXTURE_2D, _specularBufferID);
     }
 

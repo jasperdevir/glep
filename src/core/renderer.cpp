@@ -225,12 +225,8 @@ namespace GLEP{
 
     void Renderer::renderMesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> mat, std::shared_ptr<Scene> scene, glm::vec3 cameraPos, glm::mat4 projection, glm::mat4 view, glm::mat4 model, RenderType type){
         
-        if(type != RenderType::G_BUFFER || type != RenderType::SHADOW_MAP){
+        if(type != RenderType::G_BUFFER && type != RenderType::SHADOW_MAP){
             mat->Use();
-
-            mat->SetUniform("projection", glm::value_ptr(projection));
-            mat->SetUniform("view", glm::value_ptr(view));
-            mat->SetUniform("model", glm::value_ptr(model));
 
             mat->SetUniform("uGBuffer", _gBuffer);
 
@@ -276,12 +272,18 @@ namespace GLEP{
                     
                 }
             }
-        } else if (type == RenderType::SHADOW_MAP){
-            glCullFace(GL_BACK);
-            mat->SetUniform("model", glm::value_ptr(model));
-        } 
+        } else if (type == RenderType::G_BUFFER){
+            mat->UseData(_gBufferMaterial.get());
+            mat = _gBufferMaterial;
+        }
 
+        mat->SetUniform("projection", glm::value_ptr(projection));
+        mat->SetUniform("view", glm::value_ptr(view));
         mat->SetUniform("model", glm::value_ptr(model));
+
+        if (type == RenderType::SHADOW_MAP){
+            glCullFace(GL_BACK);
+        } 
 
         mat->SetUniform("viewPos", cameraPos);
         mat->SetUniform("time", Time::GetElapsedTimeF());
@@ -396,8 +398,11 @@ namespace GLEP{
         }
 
         _gBuffer->Bind();
+        _gBufferMaterial->Use();
 
+        Print(PrintCode::INFO, "GBUFFER START");
         renderSceneObjects(scene, TargetCamera, RenderType::G_BUFFER);
+        Print(PrintCode::INFO, "GBUFFER END");
         if(DebugRenderMode)
             renderDebugMode(scene, TargetCamera);
 

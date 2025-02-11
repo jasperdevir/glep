@@ -137,6 +137,7 @@ namespace GLEP{
             unsigned int _normalBufferID;
             unsigned int _diffuseBufferID;
             unsigned int _specularBufferID;
+            unsigned int _renderBufferDepthID;
 
             void initialize() override;
 
@@ -161,7 +162,7 @@ namespace GLEP{
             void Bind() override;
 
             void BindResult() override;
-    }
+    };
 
 }
 

@@ -75,7 +75,7 @@ struct GBuffer{
     sampler2D normal;
     sampler2D diffuse;
     sampler2D specular;
-}
+};
 
 struct Framebuffer{
     sampler2D color;
@@ -256,33 +256,11 @@ void main(){
     
     vec3 result = vec3(0.0f);
    
-    vec4 matDiffuse = vec4(1.0f);
-    vec3 matSpecular = vec3(0.0f);
+    vec4 matDiffuse = texture(uGBuffer.diffuse, v.uv);
+    vec3 matSpecular = texture(uGBuffer.specular, v.uv).rgb;
 
-    vec2 texCoords = v.uv;
-    if(uMaterial.hasDispTex){
-        vec3 viewDir = normalize(i.tangentViewPos - v.tangentPosition);
-        texCoords = parallaxMapping(v.uv, viewDir);
-        if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
-            discard;
-    }
-
-    vec3 normal = normalize(v.normal);
-    if(uMaterial.hasNormalTex){
-        normal = texture(uMaterial.normalTex, texCoords).rgb;
-        normal = normalize(normal * 2.0 - 1.0);
-    }
-
-    if(uMaterial.type == 1){
-        matDiffuse = uMaterial.diffuseColor;
-        matSpecular = uMaterial.specularColor.rgb;
-    } else if (uMaterial.type == 2){
-        matDiffuse = texture(uMaterial.diffuseTex, texCoords);
-        matSpecular = uMaterial.specularColor.rgb;
-    } else if(uMaterial.type == 3){
-        matDiffuse = texture(uMaterial.diffuseTex, texCoords);
-        matSpecular = texture(uMaterial.specularTex, texCoords).rgb;
-    }
+    vec3 gPosition = texture(uGBuffer.position, v.uv).rgb;
+    vec3 normal = texture(uGBuffer.normal, v.uv).rgb;
     
     vec3 ambient = uAmbient.color.rgb * uAmbient.intensity * matDiffuse.rgb;
 

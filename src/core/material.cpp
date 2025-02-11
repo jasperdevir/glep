@@ -45,7 +45,14 @@ namespace GLEP {
 
     Material::~Material(){}
 
-    void Material::Use(){ 
+    void Material::Use(){
+
+        _shader->Use();
+        
+        UseData(this);
+    }
+
+    void Material::UseData(Material* material){
         glPolygonMode(GL_FRONT_AND_BACK, Wireframe ? GL_LINE : GL_FILL);
         if(CullFace == MaterialCull::NONE) glDisable(GL_CULL_FACE);
         else{
@@ -53,19 +60,8 @@ namespace GLEP {
             glCullFace((GLenum)CullFace);
         }
 
-        /*
-            if(!GetUniform<bool>("hasNormalMap"))
-            AddUniform<bool>("hasNormalMap", false);
-
-        if(!GetUniform<bool>("hasDispMap"))
-            AddUniform<bool>("hasDispMap", false);
-        */
-        
-
-        _shader->Use();
-        
         for (auto& uniform : _uniforms) {
-            uniform->SetUniform(this); 
+            uniform->SetUniform(material); 
         }
     }
 
@@ -267,10 +263,10 @@ namespace GLEP {
 
     void Material::SetUniform(const std::string &name, std::shared_ptr<GBuffer> value){
         if(value){
-            glUniform1i(GetUniformLocation(name + ".position"), 5);
-            glUniform1i(GetUniformLocation(name + ".normal"), 6);
-            glUniform1i(GetUniformLocation(name + ".diffuse"), 7);
-            glUniform1i(GetUniformLocation(name + ".specular"), 8);
+            glUniform1i(GetUniformLocation(name + ".position"), 7);
+            glUniform1i(GetUniformLocation(name + ".normal"), 8);
+            glUniform1i(GetUniformLocation(name + ".diffuse"), 9);
+            glUniform1i(GetUniformLocation(name + ".specular"), 10);
             value->BindResult();
         }
     }
