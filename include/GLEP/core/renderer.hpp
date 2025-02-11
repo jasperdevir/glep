@@ -60,6 +60,8 @@ namespace GLEP {
             std::shared_ptr<GBuffer> _gBuffer;
             std::shared_ptr<Material> _gBufferMaterial;
 
+            std::shared_ptr<Mesh> _gBufferTarget;
+
             std::shared_ptr<Framebuffer> _shadowMapBuffer;
             std::shared_ptr<Camera> _shadowMapCamera;
             glm::mat4 _lightSpaceMatrix = glm::mat4(1.0f);

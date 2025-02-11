@@ -46,6 +46,11 @@ namespace GLEP{
         _gBuffer = std::make_shared<GBuffer>(TargetWindow->GetResolution());
         _gBufferMaterial = std::make_shared<Material>(File::GLEP_SHADERS_PATH / "default.vs", File::GLEP_SHADERS_PATH / "gBuffer.fs");
 
+        std::shared_ptr<Geometry> gBufferTargetGeo = std::make_shared<PlaneGeometry>(2.0f, 2.0f);
+        std::shared_ptr<Material> gBufferTargetMat = std::make_shared<Material>(File::GLEP_SHADERS_PATH / "post" / "defaultPass.vs", File::GLEP_SHADERS_PATH / "post" / "gbufferLighting.fs");
+        gBufferTargetMat->LightingRequired = true;
+        _gBufferTarget = std::make_shared<Mesh>(gBufferTargetGeo, gBufferTargetMat);
+
         _shadowMapBuffer = std::make_shared<DepthFramebuffer>(glm::vec2(1024)); 
         _shadowMapCamera = std::make_shared<OrthographicCamera>(10.0f, 1.0f, 0.01f, 10.0f);
 
@@ -235,7 +240,7 @@ namespace GLEP{
                 mat->SetUniform("uShadowMap", _shadowMapBuffer);
 
             if(mat->LightingRequired){
-
+                Print(PrintCode::INFO, "Lighting");
                 SceneLightData lightData = scene->GetLightData();
                 mat->SetUniform("uAmbientLightSet", lightData.AmbientLight);
                 mat->SetUniform("uDirectionalLightSet", lightData.DirectionalLight);
@@ -408,7 +413,9 @@ namespace GLEP{
 
         _gBuffer->Unbind();
 
-        renderSceneObjects(scene, TargetCamera, RenderType::LIGHTING);
+        glClearColor(ClearColor.r, ClearColor.g, ClearColor.b, ClearColor.a);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderMesh(_gBufferTarget->GeometryData, _gBufferTarget->MaterialData, scene, TargetCamera->Position, glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f), RenderType::LIGHTING);
 
         if(passComposer)
             passComposer->PreSkybox();

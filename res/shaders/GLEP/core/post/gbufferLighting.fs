@@ -2,18 +2,14 @@
 
 struct Vertex {
     vec3 position;
-    vec3 tangentPosition;
-    vec4 lightSpacePosition;
-    vec2 uv;
     vec3 normal;
-    mat3 tbn;
+    vec2 uv;
 };
 
 struct GLEPInfo {
     float time;
     float deltaTime;
     vec3 viewPos;
-    vec3 tangentViewPos;
 };
 
 struct AmbientLight{
@@ -70,6 +66,13 @@ struct Material {
     float dispScale;
 };
 
+struct GBuffer{
+    sampler2D position;
+    sampler2D normal;
+    sampler2D diffuse;
+    sampler2D specular;
+};
+
 struct Framebuffer{
     sampler2D color;
     sampler2D depth;
@@ -86,6 +89,8 @@ uniform Framebuffer uShadowMap;
 
 uniform Material uMaterial;
 
+uniform GBuffer uGBuffer;
+
 uniform AmbientLight uAmbient;
 uniform DirectionalLight uDirectionalLight;
 
@@ -101,12 +106,7 @@ vec3 diffuseLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, vec3
 }
 
 vec3 specularLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, vec3 specularMat){
-    vec3 viewDir = vec3(0.0f);
-    if(uMaterial.hasNormalTex){
-        viewDir = normalize(i.tangentViewPos - v.tangentPosition);
-    } else {
-        viewDir = normalize(i.viewPos - v.position);
-    }
+    vec3 viewDir = normalize(i.viewPos - v.position);
     vec3 halfwayDir = normalize(dir + viewDir);  
     float spec = pow(max(dot(norm, halfwayDir), 0.0), uMaterial.shininess);
 
@@ -114,13 +114,7 @@ vec3 specularLighting(vec3 dir, vec3 norm, vec3 lightColor, float intensity, vec
 }
 
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 matDiffuse, vec3 matSpecular){
-    vec3 lightDir = vec3(0.0f);
-    if(uMaterial.hasNormalTex){
-        vec3 lightPos = v.tbn * light.position;
-        lightDir = normalize(lightPos - v.tangentPosition);
-    }else {
-        lightDir = normalize(light.position - v.position);
-    }
+    vec3 lightDir = normalize(light.position - v.position);
 
     float theta = dot(lightDir, normalize(-light.direction));
     float epsilon = light.innerCutOff - light.outerCutOff;
@@ -144,12 +138,7 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 matDiffuse, vec3 matSpecul
 }
 
 vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 matDiffuse, vec3 matSpecular){
-    vec3 lightDir = vec3(0.0f);
-    if(uMaterial.hasNormalTex){
-        lightDir = normalize(v.tbn * -light.direction);
-    }else {
-        lightDir = normalize(-light.direction);
-    }
+    vec3 lightDir = normalize(-light.direction);
 
     vec3 diffuse = diffuseLighting(lightDir, normal, light.color.rgb, light.intensity, matDiffuse);
 
@@ -159,13 +148,7 @@ vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 matDiffuse, 
 }
 
 vec3 calcPointLight(PointLight light, vec3 normal, vec3 matDiffuse, vec3 matSpecular){
-    vec3 lightDir = vec3(0.0f);
-    if(uMaterial.hasNormalTex){
-        vec3 lightPos = v.tbn * light.position;
-        lightDir = normalize(lightPos - v.tangentPosition);
-    }else {
-        lightDir = normalize(light.position - v.position);
-    }
+    vec3 lightDir = normalize(light.position - v.position);
 
     vec3 diffuse = diffuseLighting(lightDir, normal, light.color.rgb, light.intensity, matDiffuse);
 
@@ -186,13 +169,7 @@ float calcDirectionalShadow(vec4 positionLightSpace, vec3 normal){
     float closestDepth = texture(uShadowMap.depth, projCoords.xy).r; 
     float currentDepth = projCoords.z;
 
-    vec3 lightDir = vec3(0.0f);
-    if(uMaterial.hasNormalTex){
-        vec3 lightPos = v.tbn * uDirectionalLight.position;
-        lightDir = normalize(lightPos - v.tangentPosition);
-    } else {
-        lightDir = normalize(uDirectionalLight.position - v.position);
-    }
+    vec3 lightDir = normalize(uDirectionalLight.position - v.position);
     
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);  
 
@@ -215,65 +192,15 @@ float calcDirectionalShadow(vec4 positionLightSpace, vec3 normal){
     return shadow;
 }
 
-vec2 parallaxMapping(vec2 texCoords, vec3 viewDir){
-    const float numLayers = 10;
-    float layerDepth = 1.0 / numLayers;
-    float currentLayerDepth = 0.0;
-    vec2 P = viewDir.xy * uMaterial.dispScale; 
-    vec2 deltaTexCoords = P / numLayers;
-
-    vec2  currentTexCoords = texCoords;
-    float currentDepthMapValue = texture(uMaterial.dispTex, currentTexCoords).r;
-    
-    while(currentLayerDepth < currentDepthMapValue)
-    {
-        currentTexCoords -= deltaTexCoords;
-        currentDepthMapValue = texture(uMaterial.dispTex, currentTexCoords).r;  
-        currentLayerDepth += layerDepth;  
-    }
-
-    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
-
-    float afterDepth  = currentDepthMapValue - currentLayerDepth;
-    float beforeDepth = texture(uMaterial.dispTex, prevTexCoords).r - currentLayerDepth + layerDepth;
-    
-    float weight = afterDepth / (afterDepth - beforeDepth);
-    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
-
-    return finalTexCoords;
-}
-
 void main(){
     
     vec3 result = vec3(0.0f);
    
-    vec4 matDiffuse = vec4(1.0f);
-    vec3 matSpecular = vec3(0.0f);
+    vec4 matDiffuse = texture(uGBuffer.diffuse, v.uv);
+    vec3 matSpecular = texture(uGBuffer.specular, v.uv).rgb;
 
-    vec2 texCoords = v.uv;
-    if(uMaterial.hasDispTex){
-        vec3 viewDir = normalize(i.tangentViewPos - v.tangentPosition);
-        texCoords = parallaxMapping(v.uv, viewDir);
-        if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
-            discard;
-    }
-
-    vec3 normal = normalize(v.normal);
-    if(uMaterial.hasNormalTex){
-        normal = texture(uMaterial.normalTex, texCoords).rgb;
-        normal = normalize(normal * 2.0 - 1.0);
-    }
-
-    if(uMaterial.type == 1){
-        matDiffuse = uMaterial.diffuseColor;
-        matSpecular = uMaterial.specularColor.rgb;
-    } else if (uMaterial.type == 2){
-        matDiffuse = texture(uMaterial.diffuseTex, texCoords);
-        matSpecular = uMaterial.specularColor.rgb;
-    } else if(uMaterial.type == 3){
-        matDiffuse = texture(uMaterial.diffuseTex, texCoords);
-        matSpecular = texture(uMaterial.specularTex, texCoords).rgb;
-    }
+    vec3 gPosition = texture(uGBuffer.position, v.uv).rgb;
+    vec3 normal = texture(uGBuffer.normal, v.uv).rgb;
     
     vec3 ambient = uAmbient.color.rgb * uAmbient.intensity * matDiffuse.rgb;
 
@@ -285,10 +212,10 @@ void main(){
         result += calcSpotLight(uSpotLights[i], normal, matDiffuse.rgb, matSpecular);
     }
 
-    result += calcDirectionalLight(uDirectionalLight, normal, matDiffuse.rgb, matSpecular);
+    //result += calcDirectionalLight(uDirectionalLight, normal, matDiffuse.rgb, matSpecular);
 
-    float shadow = calcDirectionalShadow(v.lightSpacePosition, normal); 
-    vec3 lighting = (ambient + (1.0 - shadow) * result); 
+    //float shadow = calcDirectionalShadow(v.lightSpacePosition, normal); 
+    vec3 lighting = (ambient + result); 
     
     vec4 finalColor = vec4(lighting, matDiffuse.a);
     if(finalColor.a < 0.1f) discard; 

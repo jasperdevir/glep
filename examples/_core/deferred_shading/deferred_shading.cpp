@@ -23,6 +23,8 @@ int main(){
     camera->Rotation = glm::quat(glm::lookAt(camera->Position, glm::vec3(0.0f), Camera::UP));
 
     std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>(window, camera);
+    renderer->DebugRenderMode = true;
+    renderer->DB_DrawLightAttenuation = false;
     /* ------------------------------------------------------ */
 
     /* -----Initialize the scene and add an object to it----- */
@@ -54,6 +56,27 @@ int main(){
 
     std::shared_ptr<AmbientLight> ambientLight = std::make_shared<AmbientLight>(Color::WHITE, 0.5f);
     scene->Add(ambientLight);
+
+    srand(13);
+    for(int i = 0; i < 10; i++){
+        float xPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
+        float yPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 4.0);
+        float zPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
+
+        float rColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5);
+        float gColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5);
+        float bColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5);
+
+        std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>(
+            glm::vec3(xPos, yPos, zPos),
+            Color(rColor, gColor, bColor),
+            0.5f,
+            0.7f,
+            1.8f
+        );
+
+        scene->Add(pointLight);
+    }
         /* ------------------------------------------------------ */
 
     /* ---------------------Render Loop---------------------- */
