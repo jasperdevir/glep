@@ -27,7 +27,7 @@ namespace GLEP{
     }
 
     void CubeMap::Bind(){
-        glActiveTexture(GL_TEXTURE0 + 6);
+        glActiveTexture(GL_TEXTURE0 + 4);
         glBindTexture(GL_TEXTURE_CUBE_MAP, _ID);
     }
 

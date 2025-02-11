@@ -232,6 +232,8 @@ namespace GLEP{
             mat->SetUniform("view", glm::value_ptr(view));
             mat->SetUniform("model", glm::value_ptr(model));
 
+            mat->SetUniform("uGBuffer", _gBuffer);
+
             if(RenderShadows && mat->ReceiveShadows)
                 mat->SetUniform("lightSpaceMatrix", glm::value_ptr(_lightSpaceMatrix));
                 mat->SetUniform("uShadowMap", _shadowMapBuffer);

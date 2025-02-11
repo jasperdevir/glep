@@ -233,13 +233,20 @@ namespace GLEP{
                 1 = SPECULAR
                 2 = NORMAL
                 3 = DISPLACEMENT
-            
-            FRAMEBUFFER
-                4 = COLOR
-                5 = DEPTH
 
             CUBEMAP
-                6 = CUBEMAP
+                4 = CUBEMAP
+            
+            FRAMEBUFFER
+                5 = COLOR
+                6 = DEPTH
+
+            GBUFFER
+                5 = POSITION
+                6 = NORMAL
+                7 = DIFFUSE
+                8 = SPECULAR
+            
             */
 
             /// @brief Set a uniform value.
@@ -256,6 +263,11 @@ namespace GLEP{
             /// @param name Uniform name
             /// @param value Uniform value to set
             void SetUniform(const std::string &name, std::shared_ptr<Framebuffer> value);
+
+            /// @brief Set a uniform value.
+            /// @param name Uniform name
+            /// @param value Uniform value to set
+            void SetUniform(const std::string &name, std::shared_ptr<GBuffer> value);
 
 
             /// @brief Serialize data to JSON format.

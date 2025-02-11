@@ -252,15 +252,25 @@ namespace GLEP {
 
     void Material::SetUniform(const std::string &name, std::shared_ptr<CubeMap> value){
         if(value){
-            glUniform1i(GetUniformLocation(name), 6); 
+            glUniform1i(GetUniformLocation(name), 4); 
             value->Bind();
         }
     }
 
     void Material::SetUniform(const std::string &name, std::shared_ptr<Framebuffer> value){
         if(value){
-            glUniform1i(GetUniformLocation(name + ".color"), 4);
-            glUniform1i(GetUniformLocation(name + ".depth"), 5);
+            glUniform1i(GetUniformLocation(name + ".color"), 5);
+            glUniform1i(GetUniformLocation(name + ".depth"), 6);
+            value->BindResult();
+        }
+    }
+
+    void Material::SetUniform(const std::string &name, std::shared_ptr<GBuffer> value){
+        if(value){
+            glUniform1i(GetUniformLocation(name + ".position"), 5);
+            glUniform1i(GetUniformLocation(name + ".normal"), 6);
+            glUniform1i(GetUniformLocation(name + ".diffuse"), 7);
+            glUniform1i(GetUniformLocation(name + ".specular"), 8);
             value->BindResult();
         }
     }

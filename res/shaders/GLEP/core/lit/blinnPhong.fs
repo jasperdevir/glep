@@ -70,6 +70,13 @@ struct Material {
     float dispScale;
 };
 
+struct GBuffer{
+    sampler2D position;
+    sampler2D normal;
+    sampler2D diffuse;
+    sampler2D specular;
+}
+
 struct Framebuffer{
     sampler2D color;
     sampler2D depth;
@@ -85,6 +92,8 @@ out vec4 FragColor;
 uniform Framebuffer uShadowMap;
 
 uniform Material uMaterial;
+
+uniform GBuffer uGBuffer;
 
 uniform AmbientLight uAmbient;
 uniform DirectionalLight uDirectionalLight;
